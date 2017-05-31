@@ -1,0 +1,3 @@
+n He C O Ne Na Mg Al Si P S Ar K Ca Ti Fe Ni
+
+26Al 39K 40K 41Ca 44Ti 56Ni 60Fe

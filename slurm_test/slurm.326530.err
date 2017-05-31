@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/var/spool/slurmd/job326530/slurm_script", line 15, in <module>
+    x = 1/0
+ZeroDivisionError: integer division or modulo by zero

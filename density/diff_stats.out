@@ -1,0 +1,21 @@
+rel_diff = (peak_rho - rho_at_peak_temp) / rho_at_peak_temp
+50Am
+  # nonzero rel diff: 49386 / 945628 = 0.0522256109168
+  mean nonzero rel diff: 0.0286267729922
+  median nonzero rel diff: 2.21644539174e-05
+  maximum rel diff: 0.979229098756
+cco2
+  # nonzero rel diff: 258340 / 944807 = 0.273431505059
+  mean nonzero rel diff: 0.0102812650807
+  median nonzero rel diff: 1.1062381326e-05
+  maximum rel diff: 16.3225921986
+g292-j4c
+  # nonzero rel diff: 24684 / 945628 = 0.0261032879737
+  mean nonzero rel diff: 0.180297426841
+  median nonzero rel diff: 0.10891165222
+  maximum rel diff: 7.18270620078
+jet3b
+  # nonzero rel diff: 48762 / 945628 = 0.0515657319792
+  mean nonzero rel diff: 0.203251435194
+  median nonzero rel diff: 0.136465937929
+  maximum rel diff: 8.82821609854
