@@ -1,1 +1,8 @@
+# The big folder with 500+ MB of TXT data files
 potassium_ratios/lists
+
+# Compiled C executables
+burn_query
+cco2-SDF-reader
+entropy
+SDF-reader
