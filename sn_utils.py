@@ -31,6 +31,13 @@ PRE_DIRECTORIES = ("sbatch", "queries")
 # Postprocessing directories to add to the simulation head directory
 POST_DIRECTORIES = ("analysis", "sorted_queries")
 
+# Conversion factors for converting SNSPH quantities to CGS units
+SNSPH_MASS = 1e-6 * 1.98855e33  # 1e-6 Msun in grams
+SNSPH_LENGTH = 6.957e10  # 1 Rsun in centimeters
+SNSPH_TIME = 100.0  # 100 seconds
+SNSPH_VELOCITY = SNSPH_LENGTH / SNSPH_TIME
+SNSPH_DENSITY = SNSPH_MASS / SNSPH_LENGTH**3
+
 
 # FILE OPERATIONS
 
@@ -299,4 +306,40 @@ def sbatch(filename):
 	print ">> " + ' '.join(command)
 	# Call a subprocess to submit the script with the sbatch command
 	subprocess.call(command)
+
+
+# SNSPH CONVERSION UTILITIES
+
+# Given a tuple of STRING values, multiply each one of them by the factor
+# Base function for all the convert utilities that follow this definition
+def convert(values, factor):
+	# Raise error if no values were passed at all
+	if len(values) == 0:
+		raise ValueError("values sequence of length zero encountered in convert")
+	# If one value was passed, extract it from the tuple
+	if len(values) == 1:
+		return str(factor * float(values[0]));
+	# If several values were passed, return another tuple
+	else: # len(values) > 1
+		return tuple(str(factor * float(value)) for value in values)
+
+# Convert lengths from SNSPH units to centimeters
+def convert_length(*largs):
+	return convert(largs, SNSPH_LENGTH)
+
+# Convert masses from SNSPH units to grams
+def convert_mass(*margs):
+	return convert(margs, SNSPH_MASS)
+
+# Convert times from SNSPH units to seconds
+def convert_time(*targs):
+	return convert(targs, SNSPH_TIME)
+
+# Convert velocities from SNSPH units to cm/s
+def convert_velocity(*vargs):
+	return convert(vargs, SNSPH_VELOCITY)
+
+# Convert densities from SNSPH units to g/cm^3
+def convert_density(*dargs):
+	return convert(dargs, SNSPH_DENSITY)
 

@@ -44,9 +44,9 @@ def main():
 	# Make any new directories that need to be made before processing continues
 	paths = sn.make_dirs(paths, sn.POST_DIRECTORIES)
 	# Extract the simulation's total yields and put them in the correct file
-	extract_yields(paths)
+	#extract_yields(paths)
 	# Sort the burn_query output files and put them all in the right directory
-	sort_queries(paths)
+	#sort_queries(paths)
 	# Read in the abundances file, which specififes the elements to eventually plot
 	abundances = sn.get_list(sn.ABUNDANCES_FILE)
 	# Assemble the extensive ASCII file of the various particle plotting values
@@ -142,6 +142,11 @@ def write_particles(paths, abundances):
 		peak_temp, peak_rho = get_peaks(id, entropy_early)
 		# Determine the progenitor electron fraction for this particle ID
 		ye = get_efrac(id, entropy_initial)
+		# Convert everything with mass, length, or time units from SNSPH units to CGS
+		x, y, z, h = sn.convert_length(x, y, z, h)
+		vx, vy, vz = sn.convert_velocity(vx, vy, vz)
+		mass = sn.convert_mass(mass)
+		density, peak_rho = sn.convert_density(density, peak_rho)
 		# Determine the abundance of each element in question at this particle ID
 		abun = get_abuns(id, abuns_files)
 		# Combine everything into a line that gets written to the file
