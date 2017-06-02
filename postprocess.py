@@ -10,7 +10,7 @@
 #   - Peak explosion temperatures for each particle (plot)
 #   - Selected elemental abundances for each particle (plot)
 
-# Last edited 4/3/17 by Greg Vance
+# Last edited 6/2/17 by Greg Vance
 
 # Usage example:
 #	./postprocess.py sn_data/jet3b

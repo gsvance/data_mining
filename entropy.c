@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
 	int h,i,sz,nobj;
 	char *filename;
-	char out_file[50];
+	char out_file[100];
 	int offset=1600;
 	particle part;
 

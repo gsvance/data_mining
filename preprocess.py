@@ -3,19 +3,19 @@
 # Begin the analysis for all data obtained from one supernova simulation
 # Identify all of the directories, then set up the preprocessing directories
 # Generate the appropriate sbatch scripts for all burn_query and entropy runs
+# Sneak in extraction for the unburned yields using unburned as well
 # Finish by submitting those scripts to the saguaro cluster for execution
 
-# Last edited 3/23/17 by Greg Vance
+# Last edited 6/2/17 by Greg Vance
 
 # Usage example:
 #	./preprocess.py sn_data/jet3b
-# To preprocess all data in the jet3b simulation directory  
+# To preprocess all data in the jet3b simulation directory
 
 import sys
 import os
 
 import sn_utils as sn
-
 
 # Full path to the executable run_query.py script for running burn_query
 RUN_QUERY_PATH = "/home/gsvance/data_mining/run_query.py"
@@ -23,6 +23,9 @@ RUN_QUERY_PATH = "/home/gsvance/data_mining/run_query.py"
 ENTROPY_PATH = "/home/gsvance/data_mining/entropy"
 # Full path to the compiled SDF Reader executable for cco2
 CCO2SDF_PATH = "/home/gsvance/data_mining/cco2-SDF-reader"
+# Full paths to the compiled unburned executable files
+UNBURNED_PATH = "/home/gsvance/data_mining/unburned"
+CCO2UNBURN_PATH = "/home/gsvance/data_mining/cco2-unburned"
 
 # Main program for preprocessing (called at end of this file)
 def main():
@@ -79,6 +82,7 @@ def write_burn_query_scripts(paths, isotopes):
 		sn.write_script(scriptfile, command, stdout, stderr, walltime)
 
 # Write all of the needed sbatch scripts for running entropy
+# Also sneak in extraction of unburned yields from the last SDF file
 def write_entropy_scripts(paths):
 	# Make sure there is a directory of SDF files
 	if "sdf" not in paths:
@@ -90,6 +94,9 @@ def write_entropy_scripts(paths):
 	simname = os.path.basename(paths["head"])
 	# Make sure the alternate SDF Reader is used for the cco2 simulation
 	reader = CCO2SDF_PATH if simname == "cco2" else ENTROPY_PATH
+	unburned = CCO2UNBURN_PATH if simname == "cco2" else UNBURNED_PATH
+	# Take note of which SDF file is the final timestep file
+	last = sn.sdf_list(paths, mode ="last")
 	# Figure out which SDF files need to be processed and make an sbatch script for each one
 	for sdf in sn.sdf_list(paths):
 		# Extract the file's numeric file extension
@@ -100,6 +107,9 @@ def write_entropy_scripts(paths):
 		sdf_file = os.path.join(paths["sdf"], sdf)
 		# Put together the appropriate entropy command
 		command = "\n%s %s\n" % (reader, sdf_file)
+		# If this is the last SDF file, add on an unburned command as well
+		if sdf == last:
+			command += "%s %s\n" % (unburned, sdf_file)
 		# Assemble the slurm stdout file name (in sbatch dir using job id)
 		stdout = os.path.join(paths["sbatch"], "slurm.%j.SDF" + ext + ".out")
 		# Assemble the slurm stderr file name in the same way

@@ -6,6 +6,8 @@ burn_query
 cco2-SDF-reader
 entropy
 SDF-reader
+unburned
+cco2-unburned
 
 # PYC files
 *.pyc

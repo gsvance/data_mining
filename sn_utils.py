@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 3/28/17 by Greg Vance
+# Last edited 6/2/17 by Greg Vance
 
 import os
 import sys
@@ -88,7 +88,7 @@ def get_tpos(filename):
 # There are four different modes in which this function can be told to operate:
 #  - all: default, return a list of all SDF files that need to be preprocessed by entropy
 #  - first: return the SDF file with the lowest tpos value (for Ye values in postprocessing)
-#  - last: return the SDF file with the highest tpos value (for plotting data in postprocessing)
+#  - last: return the SDF file with the highest tpos value (for unburned yields and plotting data)
 #  - early: return a list of all SDF files with tpos up to TPOS_MAX (for peak temp and rho in postprocessing)
 # The final optional argument appends a ".out" extension to list the entropy outfiles instead
 def sdf_list(paths, mode="all", dotout=False):

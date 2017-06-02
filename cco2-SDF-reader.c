@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
 	int h,i,sz,nobj;
 	char *filename;
-	char out_file[50];
+	char out_file[100];
 	int offset;
 	particle part;
 
@@ -94,7 +94,18 @@ int main(int argc, char *argv[])
 		fseek(fp, 0L, SEEK_END);
 		sz = ftell(fp);
 		nobj = (sz-offset)/sizeof(particle);
-		
+
+		/*
+		Comment from 6/2/17, Greg Vance:
+		I don't actually know what this next block of code is doing for me or why it's even here.
+		Looks like it goes to the offset position of the first particle and reads that into memory.
+		Then we print the header line to the output file, though I'm not sure why that happens here.
+		Then we rewind to the beginning of the file, and go back to the first particle before the loop starts.
+		The particle read into memory doesn't get used, and gets read in again when the loop starts.
+		Jack Sexton wrote this originally in his SDF-reader.c. It doesn't seem to have a real point.
+		I am tempted to simply remove the extraneous lines, but they might be important somehow...
+		If I figure it out at some point, I will have to be sure to add an explanatory comment here.
+		*/
 		fseek(fp,offset,SEEK_SET);
 		fread(&part,sizeof(particle),1,fp);
 		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, h, Mass, Y_e\n");
@@ -104,7 +115,7 @@ int main(int argc, char *argv[])
 		{
 			fread(&part,sizeof(particle),1,fp);
 			fprintf(ofp, "%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
-                                part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.h, part.mass, part.Y_el);
+				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.h, part.mass, part.Y_el);
 		}
 		
 		fclose(fp);
