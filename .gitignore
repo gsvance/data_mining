@@ -11,3 +11,6 @@ cco2-unburned
 
 # PYC files
 *.pyc
+
+# Output histograms from the Ti/Fe analysis
+ti_fe_stats/*.png
