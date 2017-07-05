@@ -1,0 +1,38 @@
+Aquiring 44Ti/(Fe+56Ni) ratio data from cco2 simulation...
+
+Usable nonzero values: 13626
+
+Ordering statistics:
+          minimum: 1.078e-06
+   5th percentile: 5.333e-05
+     1st quartile: 2.080e-04
+           median: 2.379e-03
+     3rd quartile: 3.520e-03
+  95th percentile: 4.501e-02
+          maximum: 5.073e-01
+
+Average and spread statistics:
+      mean: 6.662e-03
+   std dev: 1.753e-02
+  variance: 3.072e-04
+
+Making histogram of data...
+
+Repeating statistical analysis in log space...
+
+Ordering statistics in log space:
+          minimum: -5.967
+   5th percentile: -4.273
+     1st quartile: -3.682
+           median: -2.624
+     3rd quartile: -2.453
+  95th percentile: -1.347
+          maximum: -0.295
+
+Average and spread statistics in log space:
+      mean: -2.896
+   std dev: 0.852
+  variance: 0.727
+
+Making histogram of log space data...
+
