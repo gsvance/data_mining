@@ -7,7 +7,7 @@ LDLIBS = -lse
 
 .PHONY: clean
 
-all: burn_query entropy SDF-reader cco2-SDF-reader unburned cco2-unburned
+all: burn_query entropy SDF-reader cco2-SDF-reader unburned cco2-unburned update_yields
 
 burn_query:
 entropy:
@@ -15,6 +15,7 @@ SDF-reader:
 cco2-SDF-reader:
 unburned:
 cco2-unburned:
+update_yields:
 
 clean:
-	-$(RM) burn_query entropy SDF-reader cco2-SDF-reader unburned cco2-unburned *.o
+	-$(RM) burn_query entropy SDF-reader cco2-SDF-reader unburned cco2-unburned update_yields *.o

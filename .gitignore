@@ -8,6 +8,7 @@ entropy
 SDF-reader
 unburned
 cco2-unburned
+update_yields
 
 # PYC files
 *.pyc
