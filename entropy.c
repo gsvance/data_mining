@@ -1,3 +1,9 @@
+// Updated version of JMS's original entropy program by Greg Vance
+// Mostly includes significantly more explanatory comments
+// The information that is printed to the output files has changed
+
+// Last modified 7/5/17 by Greg Vance
+
 /* 	
 	Entropy
 	Cut-to-purpose version of SDF reader, the Kludgey and Highly
@@ -35,6 +41,7 @@
 #include <stddef.h>
 #include <string.h>
 
+// Particle struct taken from SDF file headers
 typedef struct
 {
     double x, y, z;		/* position of body */
@@ -61,40 +68,53 @@ typedef struct
 
 int main(int argc, char *argv[])
 {
-
-	int h,i,sz,nobj;
-	char *filename;
+	// Declarations, including the known header offset size of exactly 1600 bytes
+	int h, i, sz, nobj;
+	char * filename;
 	char out_file[100];
-	int offset=1600;
+	int offset = 1600;
 	particle part;
+	FILE * fp, * ofp;
 
+	// Print an error if called with no command line arguments
 	if (argc == 1) 
 	{
 	fprintf(stderr, "Usage: %s SDF File(s) \n", argv[0]);
 	exit(1);
    	}
 
-	for (h=1; h < argc; ++h)
+	// Loop over the input file arguments and read the files
+	for (h = 1; h < argc; h++)
 	{
-		filename=argv[h];
+		// Retrieve the input file name and construct the output file name
+		filename = argv[h];
 		strcpy(out_file, argv[h]);
 		strcat(out_file, ".out");
-		
-		FILE *fp = fopen(filename, "rb");
-		FILE *ofp = fopen(out_file,"w");
 
+		// Open the input and output files
+		fp = fopen(filename, "rb");
+		ofp = fopen(out_file, "w");
+
+		// Find the position at the end of the file, plus zero additional offset
 		fseek(fp, 0L, SEEK_END);
 		sz = ftell(fp);
-		nobj = (sz-offset)/sizeof(particle);
-		fseek(fp,offset,SEEK_SET);
+
+		// Use the end-of-file position to calculate the number of particles present
+		nobj = (sz - offset) / sizeof(particle);
+
+		// Seek to the start of the data and print the CSV header to the output file
+		fseek(fp, offset, SEEK_SET);
 		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, h, Mass, Y_e\n");
-		for (i = 0; i < nobj; ++i)
+
+		// Loop over the particles in the file, printing ASCII data to the CSV file for each
+		for (i = 0; i < nobj; i++)
 		{
-			fread(&part,sizeof(particle),1,fp);
+			fread(&part, sizeof(particle), 1, fp);
 			fprintf(ofp,"%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
 				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.h, part.mass, part.Y_el);
 		}
-		
+
+		// Close the input and output files
 		fclose(fp);
 		fclose(ofp);
 	}

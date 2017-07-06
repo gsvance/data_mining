@@ -1,6 +1,9 @@
 // Modified version of JMS's SDF Reader just for the cco2 simulation SDF files
+// Includes an offset utility function to find the byte length of the header
+// Fear not Jack, you no longer need to use a hex editor to figure that out
+// Also, I added a lot of comments to make it more clear what the code does
 
-// Last edited 6/20/16 by Greg Vance
+// Last edited 7/5/16 by Greg Vance
 
 /* 	
 	SDF Reader
@@ -40,6 +43,7 @@
 #include <stddef.h>
 #include <string.h>
 
+// Particle struct taken from the cco2 SDF file headers
 typedef struct {
     double x, y, z;             /* position of body */
     float mass;                 /* mass of body */
@@ -63,61 +67,63 @@ typedef struct {
     float f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20;
 } particle;
 
+// Declare the header length function that is defined after main
 int getoffset(FILE * fp);
 
 int main(int argc, char *argv[])
 {
-
-	int h,i,sz,nobj;
-	char *filename;
+	// Declarations
+	int h, i, sz, nobj;
+	char * filename;
 	char out_file[100];
 	int offset;
 	particle part;
+	FILE * fp, * ofp;
 
+	// Print error message if called with no command line arguments
 	if (argc == 1) 
 	{
 		fprintf(stderr, "Usage: %s SDF File(s) \n", argv[0]);
 		exit(1);
 	}
 
-	for (h=1; h < argc; ++h)
+	// Loop over the command line arguments and read each file in turn
+	for (h = 1; h < argc; h++)
 	{
-		filename=argv[h];
+		// Store the current file name and constuct the output file name
+		filename = argv[h];
 		strcpy(out_file, argv[h]);
 		strcat(out_file, ".out");
-		
-		FILE *fp = fopen(filename, "rb");
-		FILE *ofp = fopen(out_file,"w");
 
+		// Open the input file and output file
+		fp = fopen(filename, "rb");
+		ofp = fopen(out_file, "w");
+
+		// Work out the SDF header length for the input file
 		offset = getoffset(fp);
 
+		// Find the position (offset by 0 from it) of the end of the file
 		fseek(fp, 0L, SEEK_END);
 		sz = ftell(fp);
-		nobj = (sz-offset)/sizeof(particle);
 
-		/*
-		Comment from 6/2/17, Greg Vance:
-		I don't actually know what this next block of code is doing for me or why it's even here.
-		Looks like it goes to the offset position of the first particle and reads that into memory.
-		Then we print the header line to the output file, though I'm not sure why that happens here.
-		Then we rewind to the beginning of the file, and go back to the first particle before the loop starts.
-		The particle read into memory doesn't get used, and gets read in again when the loop starts.
-		Jack Sexton wrote this originally in his SDF-reader.c. It doesn't seem to have a real point.
-		I am tempted to simply remove the extraneous lines, but they might be important somehow...
-		If I figure it out at some point, I will have to be sure to add an explanatory comment here.
-		*/
-		fseek(fp,offset,SEEK_SET);
-		fread(&part,sizeof(particle),1,fp);
+		// Work out how many particles are stored in the file's binary data
+		nobj = (sz - offset) / sizeof(particle);
+
+		// Write the CSV header line to the output file
 		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, h, Mass, Y_e\n");
-		rewind(fp);
-		fseek(fp,offset,SEEK_SET);
-		for (i = 0; i < nobj; ++i)
+
+		// Set the file pointer to the position of the end of the SDF header (data starts here)
+		fseek(fp, offset, SEEK_SET);
+
+		// Read each particle from the file in succesion and print a corresponding line to the output file
+		for (i = 0; i < nobj; i++)
 		{
-			fread(&part,sizeof(particle),1,fp);
+			fread(&part, sizeof(particle), 1, fp);
 			fprintf(ofp, "%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
 				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.h, part.mass, part.Y_el);
 		}
-		
+
+		// Close the input and output files
 		fclose(fp);
 		fclose(ofp);
 	}
@@ -125,19 +131,30 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+// Function for finding the header length of an SDF file
 int getoffset(FILE * fp)
 {
-	int offset, matched;
+	// Delarations and the signal that indicates the header's end
+	int offset, matched, length;
 	char eoh[] = "\n# SDF-EOH";
+	length = strlen(eoh);
 
-	for (offset = matched = 0; matched < strlen(eoh); offset++)
+	// Read the file one char at a time, keeping track of how many match the header end
+	for (offset = matched = 0; matched < length; offset++)
 	{
-		if (getc(fp) == eoh[matched]) matched++;
-		else matched = 0;
+		if (getc(fp) == eoh[matched])
+			matched++;
+		else
+			matched = 0;
 	}
+
+	// Move past any extra newlines
 	for (; getc(fp) != '\n'; offset++);
 
+	// Rewind the file pointer to the start of the file
 	rewind(fp);
-	return offset+1;
+
+	// Set the offset one more ahead into the start of the data, and return its value
+	return offset + 1;
 }
 

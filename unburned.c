@@ -1,6 +1,8 @@
-// Modified version of JMS's 'entropy' for extracting the unburned yields
+// Modified version of JMS's entropy for extracting the unburned yields
+// Uses Jack's first particle trick for making the CSV header
+// Note that the last two isotopes in the network are intentionally unused
 
-// Last edited 6/2/17 by Greg Vance
+// Last edited 7/5/17 by Greg Vance
 
 /* 	
 	Entropy
@@ -39,6 +41,7 @@
 #include <stddef.h>
 #include <string.h>
 
+// Particle struct taken from SDF file headers
 typedef struct
 {
     double x, y, z;		/* position of body */
@@ -64,67 +67,151 @@ typedef struct
 } particle; 
 
 /*
+Here are some notes on extracting the isotope data from the particle struct.
 The final three lines in the particle struct store the unburned yields data:
-	- f1..f22 are the mass fractions X for each nucleus.
-	- p1..p22 are the proton numbers Z for each nucleus.
-	- m1..m22 are the mass numbers A for each nucleus.
-There are 22 isotopes in the SNSPH network that is being used here.
-This should probably only be used for the final timestep SDF files.
-Earlier files might have unburned yields that just haven't burned YET.
+	- f1..f20 are the mass fractions X for each nucleus.
+	- p1..p20 are the proton numbers Z for each nucleus.
+	- m1..m20 are the neutron numbers N for each nucleus.
+There are 20 isotopes in the SNSPH network that is being used here.
+The last two isotopes (21 and 22) are unused and should be left ignored.
+Extraction should probably only be used for the final timestep SDF files.
+Earlier files can have unburned yields that just haven't burned YET.
 */
+
+// Declaration of the isotope matching function defined after main
+void match_pm(particle * p1, particle * p2);
 
 int main(int argc, char *argv[])
 {
+	// Declarations, including the known header offset of 1600 bytes
 	int h, i, sz, nobj;
 	char * filename;
 	char out_file[100];
 	int offset = 1600;
-	particle part;
+	particle part, first;
+	FILE * fp, * ofp;
 
+	// Print an error if called with no command line arguments
 	if (argc == 1) 
 	{
 		fprintf(stderr, "Usage: %s SDF File(s)\n", argv[0]);
 		exit(1);
    	}
 
+	// Read each file from the command line in turn
 	for (h = 1; h < argc; h++)
 	{
+		// Store the input file name and construct the output file name
 		filename = argv[h];
 		strcpy(out_file, argv[h]);
 		strcat(out_file, ".unburned.out");
-		
-		FILE *fp = fopen(filename, "rb");
-		FILE *ofp = fopen(out_file, "w");
 
+		// Open the input and output files
+		fp = fopen(filename, "rb");
+		ofp = fopen(out_file, "w");
+
+		// Seek the end of the file with zero offset from that position
 		fseek(fp, 0L, SEEK_END);
 		sz = ftell(fp);
-		nobj = (sz-offset) / sizeof(particle);
-		fseek(fp, offset, SEEK_SET);
 
-		fprintf(ofp, "ID\n");
-		fprintf(ofp, "Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13, Z14, Z15, Z16, Z17, Z18, Z19, Z20, Z21, Z22\n");
-		fprintf(ofp, "A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22\n");
-		fprintf(ofp, "X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18, X19, X20, X21, X22\n");
+		// Calculate the number of particles stored in the file
+		nobj = (sz - offset) / sizeof(particle);
 
+		// Seek the start of the particle data in the file and read the first particle
+        fseek(fp, offset, SEEK_SET);
+        fread(&first, sizeof(particle), 1, fp);
+
+		// Use the isotope Z and N values from the first particle to print a CSV header for the output file
+		fprintf(ofp, "ID, Mass, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, "
+			"nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, "
+			"nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d, nz=%d:nn=%d\n",
+			first.p1, first.m1, first.p2, first.m2, first.p3, first.m3, first.p4, first.m4, first.p5, first.m5,
+			first.p6, first.m6, first.p7, first.m7, first.p8, first.m8, first.p9, first.m9, first.p10, first.m10,
+			first.p11, first.m11, first.p12, first.m12, first.p13, first.m13, first.p14, first.m14, first.p15, first.m15,
+			first.p16, first.m16, first.p17, first.m17, first.p18, first.m18, first.p19, first.m19, first.p20, first.m20);
+
+		// Rewind the file and set the pointer to the start of the data again
+		rewind(fp);
+        fseek(fp, offset, SEEK_SET);
+
+		// Loop over the particles in the file and extract their unburned yields abundances
 		for (i = 0; i < nobj; i++)
 		{
+			// Read in the next particle from the file and check its proton and neutron numbers
 			fread(&part, sizeof(particle), 1, fp);
-			fprintf(ofp, "%u\n", part.ident);
-			fprintf(ofp, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
-				part.p1, part.p2, part.p3, part.p4, part.p5, part.p6, part.p7, part.p8, part.p9, part.p10, part.p11,
-				part.p12, part.p13, part.p14, part.p15, part.p16, part.p17, part.p18, part.p19, part.p20, part.p21, part.p22);
-			fprintf(ofp, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
-				part.m1, part.m2, part.m3, part.m4, part.m5, part.m6, part.m7, part.m8, part.m9, part.m10, part.m11,
-				part.m12, part.m13, part.m14, part.m15, part.m16, part.m17, part.m18, part.m19, part.m20, part.m21, part.m22);
-			fprintf(ofp, "%e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e\n",
-				part.f1, part.f2, part.f3, part.f4, part.f5, part.f6, part.f7, part.f8, part.f9, part.f10, part.f11,
-				part.f12, part.f13, part.f14, part.f15, part.f16, part.f17, part.f18, part.f19, part.f20, part.f21, part.f22);
+			match_pm(&part, &first);
+
+			// Print the PID number, particle mass, and isotope abundances to the output file
+			fprintf(ofp, "%u, %g, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e\n",
+				part.ident, part.mass,
+				part.f1, part.f2, part.f3, part.f4, part.f5, part.f6, part.f7, part.f8, part.f9, part.f10,
+				part.f11, part.f12, part.f13, part.f14, part.f15, part.f16, part.f17, part.f18, part.f19, part.f20);
 		}
-		
+
+		// Close the input and output files
 		fclose(fp);
 		fclose(ofp);
 	}
 
 	return 0;
+}
+
+// Check that two particles have EXACTLY the same proton and neutron numbers
+// Ignore isotopes 21 and 22, which are to be ignored since the network has 20 isotopes
+// I'm not taking any chances that something doesn't match for some silly reason
+// Print an error and invoke the stdlib exit function if something doesn't jive
+void match_pm(particle * part1, particle * part2)
+{
+	// Keep track of whether any check has failed
+	int fail = 0;
+
+	// Check every pair of proton and neutron numbers
+	if (part1->p1 != part2->p1 || part1->m1 != part2->m1)
+		fail = 1;
+	if (part1->p2 != part2->p2 || part1->m2 != part2->m2)
+		fail = 1;
+	if (part1->p3 != part2->p3 || part1->m3 != part2->m3)
+		fail = 1;
+	if (part1->p4 != part2->p4 || part1->m4 != part2->m4)
+		fail = 1;
+	if (part1->p5 != part2->p5 || part1->m5 != part2->m5)
+		fail = 1;
+	if (part1->p6 != part2->p6 || part1->m6 != part2->m6)
+		fail = 1;
+	if (part1->p7 != part2->p7 || part1->m7 != part2->m7)
+		fail = 1;
+	if (part1->p8 != part2->p8 || part1->m8 != part2->m8)
+		fail = 1;
+	if (part1->p9 != part2->p9 || part1->m9 != part2->m9)
+		fail = 1;
+	if (part1->p10 != part2->p10 || part1->m10 != part2->m10)
+		fail = 1;
+	if (part1->p11 != part2->p11 || part1->m11 != part2->m11)
+		fail = 1;
+	if (part1->p12 != part2->p12 || part1->m12 != part2->m12)
+		fail = 1;
+	if (part1->p13 != part2->p13 || part1->m13 != part2->m13)
+		fail = 1;
+	if (part1->p14 != part2->p14 || part1->m14 != part2->m14)
+		fail = 1;
+	if (part1->p15 != part2->p15 || part1->m15 != part2->m15)
+		fail = 1;
+	if (part1->p16 != part2->p16 || part1->m16 != part2->m16)
+		fail = 1;
+	if (part1->p17 != part2->p17 || part1->m17 != part2->m17)
+		fail = 1;
+	if (part1->p18 != part2->p18 || part1->m18 != part2->m18)
+		fail = 1;
+	if (part1->p19 != part2->p19 || part1->m19 != part2->m19)
+		fail = 1;
+	if (part1->p20 != part2->p20 || part1->m20 != part2->m20)
+		fail = 1;
+
+	// If anything fails, kill the program and tell me
+	if (fail)
+	{
+		fprintf(stderr, "There was a particle isotope mismatch!\n");
+		exit(2);
+	}
 }
 

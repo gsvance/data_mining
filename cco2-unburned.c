@@ -1,6 +1,7 @@
 // Modified version of entropy for extracting unburned yields from cco2
+// Identities of the 20 network isotopes must be inferred from other sims
 
-// Last edited 6/2/17 by Greg Vance
+// Last edited 7/5/17 by Greg Vance
 
 /* 	
 	Entropy
@@ -39,6 +40,7 @@
 #include <stddef.h>
 #include <string.h>
 
+// Particle structure taken from the cco2 SDF file headers
 typedef struct {
     double x, y, z;             /* position of body */
     float mass;                 /* mass of body */
@@ -62,71 +64,88 @@ typedef struct {
     float f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,f19,f20;
 } particle;
 
+// The identities of the 20 network isotopes as best I can infer from the other sims
+// There are from 50Am, using interactive Python to dissect the .unburned.out file header
+int iso_nz[20] = {0, 1, 2, 6, 8, 10, 12, 14, 15, 16, 18, 20, 20, 21, 22, 24, 26, 26, 27, 28};
+int iso_nn[20] = {1, 0, 2, 6, 8, 10, 12, 14, 16, 16, 18, 20, 24, 23, 22, 24, 26, 30, 29, 28};
+
 /*
-The final three line in the particle struct stores the unburned yields data:
+Here are some notes on extracting the isotope data from the particle struct.
+The final line in the particle struct stores all the unburned yields data:
 	- f1..f20 are the mass fractions X for each nucleus.
-	- I am not yet sure which isotopes these correspond to.
+	- The isotopes these correspond to are the same as for the other sims.
+	- The iso_p and iso_m arrays are here to label the 20 isotopes.
 There are 20 isotopes in the SNSPH network that is being used here.
-This should probably only be used for the final timestep SDF files.
-Earlier files might have unburned yields that just haven't burned YET.
+The cco2 SDF files don't have those two extra isotopes like other sims do.
+Extraction should probably only be used for the final timestep SDF files.
+Earlier files can have unburned yields that just haven't burned YET.
 */
 
+// Declare the function for measuring the header length, which is defined later
 int getoffset(FILE * fp);
 
 int main(int argc, char *argv[])
 {
-	int h, i, sz, nobj;
+	// Declarations
+	int h, j, i, sz, nobj;
 	char * filename;
 	char out_file[100];
 	int offset;
 	particle part;
+	FILE * fp, * ofp;
 
+	// Print an error meassage if called with no command line arguments
 	if (argc == 1) 
 	{
 		fprintf(stderr, "Usage: %s SDF File(s)\n", argv[0]);
 		exit(1);
    	}
 
+	// Loop over the arguments and read each file given
 	for (h = 1; h < argc; h++)
 	{
+		// Store the input file anem and construct the output file name
 		filename = argv[h];
 		strcpy(out_file, argv[h]);
 		strcat(out_file, ".unburned.out");
-		
-		FILE *fp = fopen(filename, "rb");
-		FILE *ofp = fopen(out_file, "w");
 
+		// Open the input and output files
+		fp = fopen(filename, "rb");
+		ofp = fopen(out_file, "w");
+
+		// Work out the byte length of the header
 		offset = getoffset(fp);
 
+		// Seek the end of the file, with zero offset from that position
 		fseek(fp, 0L, SEEK_END);
 		sz = ftell(fp);
-		nobj = (sz-offset) / sizeof(particle);
+
+		// Use the length of the file to figure out the number of particles
+		nobj = (sz - offset) / sizeof(particle);
+
+		// Seek the beginning of the particle data in the file
 		fseek(fp, offset, SEEK_SET);
 
-		fprintf(ofp, "ID\n");
-		/*
-		fprintf(ofp, "Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8, Z9, Z10, Z11, Z12, Z13, Z14, Z15, Z16, Z17, Z18, Z19, Z20, Z21, Z22\n");
-		fprintf(ofp, "A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15, A16, A17, A18, A19, A20, A21, A22\n");
-		*/
-		fprintf(ofp, "X1, X2, X3, X4, X5, X6, X7, X8, X9, X10, X11, X12, X13, X14, X15, X16, X17, X18, X19, X20\n");
+		// Print a CSV header for the output file, including Z and N labels for each isotope
+		fprintf(ofp, "ID, Mass");
+		for (j = 0; j < 20; j++)
+			fprintf(ofp, ", nz=%d:nn=%d", iso_nz[j], iso_nn[j]);
+		fprintf(ofp, "\n");
 
+		// Loop over the particles in the file and write data to the output file
 		for (i = 0; i < nobj; i++)
 		{
+			// Read in a particle from the file
 			fread(&part, sizeof(particle), 1, fp);
-			fprintf(ofp, "%u\n", part.ident);
-			/*
-			fprintf(ofp, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
-				part.p1, part.p2, part.p3, part.p4, part.p5, part.p6, part.p7, part.p8, part.p9, part.p10, part.p11,
-				part.p12, part.p13, part.p14, part.p15, part.p16, part.p17, part.p18, part.p19, part.p20, part.p21, part.p22);
-			fprintf(ofp, "%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
-				part.m1, part.m2, part.m3, part.m4, part.m5, part.m6, part.m7, part.m8, part.m9, part.m10, part.m11,
-				part.m12, part.m13, part.m14, part.m15, part.m16, part.m17, part.m18, part.m19, part.m20, part.m21, part.m22);
-			*/
-			fprintf(ofp, "%e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e\n",
-				part.f1, part.f2, part.f3, part.f4, part.f5, part.f6, part.f7, part.f8, part.f9, part.f10,
-				part.f11, part.f12, part.f13, part.f14, part.f15, part.f16, part.f17, part.f18, part.f19, part.f20);
+
+			// Print the PID number,particle mass, and isotope abundances to the output file
+			fprintf(ofp, "%u, %g, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e, %e\n",
+                part.ident, part.mass,
+                part.f1, part.f2, part.f3, part.f4, part.f5, part.f6, part.f7, part.f8, part.f9, part.f10,
+                part.f11, part.f12, part.f13, part.f14, part.f15, part.f16, part.f17, part.f18, part.f19, part.f20);
 		}
-		
+
+		// Close the input and output files
 		fclose(fp);
 		fclose(ofp);
 	}
@@ -134,20 +153,30 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
+// Function for figuring out the header length of an arbitrary SDF file
 int getoffset(FILE * fp)
 {
-	int offset, matched;
-	char eoh[] = "\n# SDF-EOH";
+    // Delarations and the sequence that indicates the header's end
+    int offset, matched, length;
+    char eoh[] = "\n# SDF-EOH";
+    length = strlen(eoh);
 
-	for (offset = matched = 0; matched < strlen(eoh); offset++)
-	{
-		if (getc(fp) == eoh[matched]) matched++;
-		else matched = 0;
-	}
-	for (; getc(fp) != '\n'; offset++);
+    // Read the header one char at a time, keeping track of how many match the header end
+    for (offset = matched = 0; matched < length; offset++)
+    {
+        if (getc(fp) == eoh[matched])
+            matched++;
+        else
+            matched = 0;
+    }
 
-	rewind(fp);
-	return offset+1;
+    // Move past any extra newlines at the end of the header
+    for (; getc(fp) != '\n'; offset++);
+
+    // Rewind the file pointer to the start of the file again
+    rewind(fp);
+
+    // Set the offset one ahead into the start of the data, and return the value
+    return offset + 1;
 }
-
 
