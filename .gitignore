@@ -1,6 +1,9 @@
 # The big folder with 500+ MB of TXT data files
 potassium_ratios/lists
 
+# The output file for potassium ratios
+potassium_ratios/potassium.out
+
 # Compiled C executables
 burn_query
 cco2-SDF-reader
@@ -13,5 +16,7 @@ update_yields
 # PYC files
 *.pyc
 
-# Output histograms from the Ti/Fe analysis
-ti_fe_stats/*.png
+# Output histograms and text from the Fe/Ti stats analysis
+fe_ti_stats/*.png
+fe_ti_stats/stats.out
+
