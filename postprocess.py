@@ -3,6 +3,7 @@
 # Complete the analysis for all data obtained from one supernova simulation
 # Identify all of the directories and such, then set up postprocessing directories
 # Look through all the slurm .out files and extract the simulation's total yields
+# Update the extracted total yields using the unburned yields from the SDF files
 # Sort the outfiles from burn_query because their contents start out disorganized
 # Combine all of the desired plotting values into a single file, including:
 #   - Particle IDs, final positions, masses, smoothing lengths
@@ -10,7 +11,7 @@
 #   - Peak explosion temperatures for each particle (plot)
 #   - Selected elemental abundances for each particle (plot)
 
-# Last edited 6/2/17 by Greg Vance
+# Last edited 7/9/17 by Greg Vance
 
 # Usage example:
 #	./postprocess.py sn_data/jet3b
@@ -27,6 +28,8 @@ from particler import Particler
 
 # Full path to the extract_yields.sh executable shell script
 EXTRACT_YIELDS_PATH = "/home/gsvance/data_mining/extract_yields.sh"
+# Full path to the compiled update_yields executable
+UPDATE_YIELDS_PATH = "/home/gsvance/data_mining/update_yields"
 # Full path to the sort_query.sh executable shell script
 SORT_QUERY_PATH = "/home/gsvance/data_mining/sort_query.sh"
 
@@ -44,9 +47,11 @@ def main():
 	# Make any new directories that need to be made before processing continues
 	paths = sn.make_dirs(paths, sn.POST_DIRECTORIES)
 	# Extract the simulation's total yields and put them in the correct file
-	#extract_yields(paths)
+	extract_yields(paths)
+	# Update the simulation's total yields with unburned data and save that too
+	update_yields(paths)
 	# Sort the burn_query output files and put them all in the right directory
-	#sort_queries(paths)
+	sort_queries(paths)
 	# Read in the abundances file, which specififes the elements to eventually plot
 	abundances = sn.get_list(sn.ABUNDANCES_FILE)
 	# Assemble the extensive ASCII file of the various particle plotting values
@@ -69,9 +74,41 @@ def extract_yields(paths):
 	command = [EXTRACT_YIELDS_PATH, sbatch_dir, yields_path]
 	# Print the command to screen just before executing it
 	print ">> " + ' '.join(command)
-	# Call a subprocess to execute the shell script from within python
+	# Call a subprocess to execute the shell script from within Python
 	subprocess.call(command)
 	# Let user inspect output from the command and ask before continuing
+	if not sn.ask_user("Continue program execution?"):
+		print "Aborting on user command"
+		sys.exit()
+
+# Run the update_yields program to create an updated yields file for the simulation
+def update_yields(paths):
+	# Make sure the simulation has SDF files before trying to use SDF data
+	if "sdf" not in paths:
+		# Skip this function if no files exist
+		return
+	# Print a quick progress message for the user
+	print "\nUpdating total yields with unburned yields data"
+	# Use glob to match the name of the unburned yields SDF file
+	unburned_glob = glob.glob(os.path.join(paths["sdf"], "*.unburned.out"))
+	# Be sure that EXACTLY one file matches the unburned yields name format
+	if len(unburned_glob) != 1:
+		print "Error: matched %d .unburned.out files" % (len(unburned_glob))
+		sys.exit()
+	# Save the full path to the unburned yields SDF file
+	unburned_path = unburned_glob[0]
+	# Get the simulation name from the head directory
+	simname = os.path.basename(paths["head"])
+	# Construct the full path to the simulation's total yields file
+	yields = "%s_yields.out" % (simname)
+	yields_path = os.path.join(paths["analysis"], yields)
+	# Assemble the full shell command to run the executable
+	command = [UPDATE_YIELDS_PATH, yields_path, unburned_path]
+	# Print the command on screen before it is executed
+	print ">> " + ' '.join(command)
+	# Call a subprocess to execute the program from within Python
+	subprocess.call(command)
+	# Let the user decide whether we should continue at this point
 	if not sn.ask_user("Continue program execution?"):
 		print "Aborting on user command"
 		sys.exit()
