@@ -1,0 +1,78 @@
+Greg Vance, 7/17/17
+
+
+This file contains all of my notes on how to use the basics of the SE library to read HDF5 files.
+It mostly consists of a list of all SE functions used in burn_query.c and their apparent purposes.
+Each one's purpose and proper usage are inferred from burn_query.c and comments in the SE library.
+As of 7/17/17, I'm using this to figure out how to get a list of particle IDs out of an HDF5 file.
+
+
+Include the SE library in a C program by #including the header file named SE.h
+I currently have things set up on Saguaro so that mine is located at ~/se/include/SE.h
+The following line in my ~/.bashrc file makes sure that the linker can find it (I think)
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/se/include
+SE.h has prototypes for all SE functions, along with comments saying which files define them
+
+
+OPEN AND CLOSE FILES (~/se/src/SEopen.c)
+========================================
+
+int SEopen(char * filename);
+This function opens a file with given file name for reading and returns a file ID number.
+That number is essentially a file pointer and can be used to reference the open file later on.
+
+void SEclose(int file_id);
+Takes the file ID number for an open file and closes that file. Seems self-explanatory to me.
+
+
+READ DATASETS (~/se/src/SEread.c)
+=================================
+
+void SEreadDArrayAttr(int ifile_id, int cycle, char * dsetname, double ** buf, int * nentries);
+This function, like the one below it, reads an array of numbers from a dataset in the file.
+Unlike the next function, this on reads doubles, not ints. In C, every type needs its own function.
+In burn_query.c, this is used to actually read out the fractional mass values for each particle.
+In this case, cycle should be set to the value of the particle ID that we want data from.
+The dsetname parameter should be set to the string "fmass" for reading fractional mass data.
+The return values from this function are the values *buf and *nentries, like the next function.
+Looks like *buf is an array of *netries values, which consists of allocated memory to be freed later.
+For us, the value *nentries should always match the number of isotopes in the Burn network.
+
+void SEreadIArrayAttr(int ifile_id, int cycle, char * dsetname, int ** buf, int * nentries);
+Name of this function suggests it is reading a dataset attribute from the file that is an int array.
+Give it the file ID number, and... I'm not exactly sure what cycle or dsetname are supposed to be.
+In burn_query.c, they are used to extract the arrays of all the proton and neutron numbers.
+With sefp being the file ID number, nn and nz being int pointers, and nspecies being an int:
+  SEreadIArrayAttr(sefp, -1, "nn", &nn, &nspecies);
+  SEreadIArrayAttr(sefp, -1, "nz", &nz, &nspecies);
+Seems for my purposes that I can just set cycle to -1 and dsetname to the name of the desired attribute.
+The value of *nentries or nspecies should always be the number of isotopes that are in the Burn network.
+The two return values are *buf and *nentries, where it appears that *buf is an array of *nentries ints.
+I think the *buf array is allocated memory, since free(nn) and free(nz) appear later in burn_query.c.
+
+
+READ DATASET AND FILE ATTRIBUTES (~/se/src/SEattr.c)
+====================================================
+
+double SEreadDAttr(int file_id, int model, char * name);
+This function is used in burn_query.c to read the mass from each particle ID individually.
+The value of model should be the particle ID that I am interested in knowing the mass for.
+Set the name parameter to the string "mass", the name of the attribute that we want.
+The return value of this function seems to be the total mass of all isotopes in the particle.
+
+
+QUERY FILES FOR STRUCTURAL INFORMATION (~/se/src/SEquery.c)
+===========================================================
+
+int SEncycles(int file_id);
+Not sure I understand this function in general, but in burn_query.c, it just returns the number of particles.
+The burn_query.c code proceeds to allocate space for exactly that number of ints to store the particle IDs.
+I think the next function (SEcycles without the n) will actually fill all the particle IDs in that array.
+
+void SEcycles(int file_id, int * cycles, int ncycles);
+This function has the effect of filling an array with all of the particle IDs from the file.
+The value of ncycles should be the value returned by a call to the function SEncycles above this.
+The parameter cycles should already point to an allocated array with space for ncycles ints.
+The filled contents of the cycles array are the return value from this function.
+
+
