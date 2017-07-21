@@ -12,6 +12,7 @@ SDF-reader
 unburned
 cco2-unburned
 update_yields
+hdf5_pid_list
 
 # PYC files
 *.pyc
