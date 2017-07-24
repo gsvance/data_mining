@@ -5,7 +5,7 @@
 // The name of the output file must also be passed in, preceeded by -o
 // For example: ./hdf5_pid_list abc.h5 def.h5 ghi.h5 jkl.h5 -o output.txt
 
-// Last edited 7/20/17 by Greg Vance
+// Last edited 7/24/17 by Greg Vance
 
 #include <stdio.h>
 #include <stdlib.h>
