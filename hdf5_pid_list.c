@@ -12,9 +12,12 @@
 #include <string.h>
 #include <SE.h>
 
+// Global variable to store the called name of the program
+char * argv0;
+
 // Prototypes for helper functions that are defined later
 int ends_with(char * str, char * end);
-int * read_hdf5_ids(char * hdf5name, int * ids);
+int * read_hdf5_ids(char * hdf5name, int * n_particles);
 int cmpint(const void * i1, const void * i2);
 void write_text_ids(char * outfilename, int * all_ids, int tot_ids);
 
@@ -23,13 +26,16 @@ int main(int argc, char * argv[])
 	// Declarations
 	int c, n_hdf5, i, tot_ids, j, k;
 	char * outfilename;
-	int * n_ids, all_ids;
+	int * n_ids, * all_ids;
 	int ** ids;
+
+	// Save the value of argv[0] globally
+	argv0 = argv[0];
 
 	// Check that command is called with enough arguments
 	if (argc < 4)
 	{
-		fprintf(stderr, "%s: not enough arguments\n", argv[0]);
+		fprintf(stderr, "%s: not enough arguments\n", argv0);
 		exit(1);
 	}
 
@@ -51,29 +57,26 @@ int main(int argc, char * argv[])
 					outfilename = argv[c];
 				else
 				{
-					fprintf(stderr, "%s: multiple output files?\n", argv[0]);
+					fprintf(stderr, "%s: multiple output files?\n", argv0);
 					exit(2);
 				}
 			}
 			else
 			{
-				fprintf(stderr, "%s: output file %s is an HDF5?\n", argv[0], argv[c]);
+				fprintf(stderr, "%s: output file %s is an HDF5\n", argv0, argv[c]);
 				exit(2);
 			}
 		}
 		// Otherwise, just make sure the argument is an HDF5 file
-		else
+		else if (!ends_with(argv[c], ".h5"))
 		{
-			if (!ends_with(argv[c], ".h5"))
-			{
-				fprintf(stderr, "%s: argument %s not an HDF5 file\n", argv[0], argv[c]);
-				exit(2);
-			}
+			fprintf(stderr, "%s: argument %s not an HDF5 file\n", argv0, argv[c]);
+			exit(2);
 		}
 	}
 	if (outfilename == NULL)
 	{
-		fprintf(stderr, "%s: no output file name\n", argv[0]);
+		fprintf(stderr, "%s: no output file name\n", argv0);
 		exit(2);
 	}
 
@@ -84,7 +87,7 @@ int main(int argc, char * argv[])
 	n_ids = malloc(n_hdf5 * sizeof(int));
 	if (n_ids == NULL)
 	{
-		fprintf(stderr, "%s: failure allocating n_ids\n", argv[0]);
+		fprintf(stderr, "%s: failure allocating n_ids\n", argv0);
 		exit(3);
 	}
 
@@ -92,7 +95,7 @@ int main(int argc, char * argv[])
 	ids = malloc(n_hdf5 * sizeof(int *));
 	if (ids == NULL)
 	{
-		fprintf(stderr, "%s: failure allocating ids\n", argv[0]);
+		fprintf(stderr, "%s: failure allocating ids\n", argv0);
 		exit(3);
 	}
 
@@ -114,7 +117,7 @@ int main(int argc, char * argv[])
 	all_ids = malloc(tot_ids * sizeof(int));
 	if (all_ids == NULL)
 	{
-		fprintf(stderr, "%s: failure allocating all_ids\n", argv[0]);
+		fprintf(stderr, "%s: failure allocating all_ids\n", argv0);
 		exit(3);
 	}
 
@@ -131,11 +134,14 @@ int main(int argc, char * argv[])
 	write_text_ids(outfilename, all_ids, tot_ids);
 
 	// Free all allocated memory
-	for (i = 0; i < n_hdf5, i++)
+	for (i = 0; i < n_hdf5; i++)
 		free(ids[i]);
 	free(n_ids);
 	free(ids);
 	free(all_ids);
+
+	// Print a message for the user indicating completion
+	printf("List of IDs compiled and saved to %s\n", outfilename);
 
 	return 0;
 }
@@ -164,20 +170,62 @@ int ends_with(char * str, char * end)
 
 // Read out the list of particle IDS from the given HDF5 file name
 // Return a pointer to allocated array of IDs and the length of that array
-int * read_hdf5_ids(char * hdf5name, int * ids)
+int * read_hdf5_ids(char * hdf5name, int * n_particles)
 {
-	
+	// Declarations
+	int file_id, parts;
+	int * id_list;
+
+	// Use the SE library to open the HDF5 file
+	file_id = SEopen(hdf5name);
+
+	// Use SEncycles to acertain the number of particles in the file
+	parts = SEncycles(file_id);
+
+	// Allocate enough space to store all the particle IDs that are coming
+	id_list = malloc(parts * sizeof(int));
+	if (id_list == NULL)
+	{
+		fprintf(stderr, "%s: failure allocating id_list in read_hdf5_ids\n", argv0);
+		exit(4);
+	}
+
+	// Use SEcycles to read the array of particle IDs from file
+	SEcycles(file_id, id_list, parts);
+
+	// Close the HDF5 file that the SE library still has open
+	SEclose(file_id);
+
+	// Return the number of particle IDs read from the file and the data pointer
+	*n_particles = parts;
+	return id_list;
 }
 
 // Compare two ints for the qsort function
 int cmpint(const void * i1, const void * i2)
 {
+	// Cast void *s to int *s and dereference to take their difference
 	return ( (*(int *)i1) - (*(int *)i2) );
 }
 
 // Write the full list of ID numbers out to the plaintext file
 void write_text_ids(char * outfilename, int * all_ids, int tot_ids)
 {
-	
+	// Declarations
+	FILE * fp;
+	int i;
+
+	// Open the file in write mode
+	fp = fopen(outfilename, "w");
+
+	// To help out later, put the number of IDs on the first line of the file
+	fprintf(fp, "n_ids=%d\n", tot_ids);
+
+	// Write each ID number to the file on a new line
+	for (i = 0; i < tot_ids; i++)
+		fprintf(fp, "%d\n", all_ids[i]);
+
+	// Close the file
+	fclose(fp);
 }
 
