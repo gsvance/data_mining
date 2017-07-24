@@ -176,6 +176,9 @@ int * read_hdf5_ids(char * hdf5name, int * n_particles)
 	int file_id, parts;
 	int * id_list;
 
+	// Print a progress message for the user
+	printf("Currently reading file %s\n", hdf5name);
+
 	// Use the SE library to open the HDF5 file
 	file_id = SEopen(hdf5name);
 
