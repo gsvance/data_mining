@@ -1,18 +1,20 @@
 // Program for updating the total yields from a sim using unburned yields data
 // Pass the total yields and unburned yields files in as command line arguments
-// The identities of those two files are determined by their file name endings
-// Calling this without an _yields.out and a .unburned.out file is an error!
+// To avoid double-counting, the particle IDs list file must be passed as well
+// The identities of the three files are determined by their file name endings
+// Calling this program without the appropriate list of files is an error!
 
-// Last modified 7/9/17 by Greg Vance
+// Last modified 7/24/17 by Greg Vance
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-// The two file name endings this program looks for on the command line
+// The three file name endings this program looks for on the command line
 #define TOTAL_YIELDS_END "_yields.out"
 #define UNBURNED_YIELDS_END ".unburned.out"
+#define PIDS_FILE_END "_pids.out"
 
 // New file name ending for the updated total yields output file
 #define UPDATED_YIELDS_END "_updated_yields.out"
@@ -33,20 +35,26 @@ typedef struct {
 } isotope;
 
 // Struct to store data from one line of the unburned yields file
+// The tag attribute is not from the file, but is part of this program instead
 typedef struct {
 	unsigned int pid;
 	float mass;
 	float mass_frac[SNSPH_NETWORK];
+	int tag;
 } particle;
 
 // Global arrays to store proton and neutron numbers for the unburned yields
 int unburned_nz[SNSPH_NETWORK];
 int unburned_nn[SNSPH_NETWORK];
 
+// Variable to globally store the name of the program
+char * argv0;
+
 // Declarations of helper functions that are defined later
 int ends_with(char * str, char * end);
 void read_total(isotope data[], char * file_name);
 particle * read_unburned(char * file_name, int * particles);
+void tag_unburned_particles(particle * data, int particles, char * pids_file);
 void sum_unburned(double totals[], particle * data, int particles);
 void update_totals(isotope totals[], double unburned[]);
 double pairs_sum(double * array, int n);
@@ -55,41 +63,65 @@ void write_updated(isotope data[], char * file_name);
 int main(int argc, char * argv[])
 {
 	// Declarations
+	int c;
 	char * total_yields;
 	char * unburned_yields;
+	char * pids_file;
 	char output_file[500];
 	isotope total_data[BURN_NETWORK];
 	particle * unburned_data;
 	int particles;
 	double unburned_totals[SNSPH_NETWORK];
 
+	// Save the called name of the program globally
+	argv0 = argv[0];
+
 	// Check for the correct number of command line arguments, as stated above
-	if (argc != 3)
+	if (argc != 4)
 	{
-		fprintf(stderr, "%s: please provide TWO file arguments\n", argv[0]);
+		fprintf(stderr, "%s: please provide THREE file arguments\n", argv0);
 		exit(1);
 	}
 
-	// Identify the two file arguments and raise errors if identification fails
-	if (ends_with(argv[1], TOTAL_YIELDS_END))
-		total_yields = argv[1];
-	else if (ends_with(argv[2], TOTAL_YIELDS_END))
-		total_yields = argv[2];
-	else
+	// Identify the three file arguments and raise errors if identification fails
+	total_yields = unburned_yields = pids_file = NULL;
+	for (c = 1; c < argc; c++)
 	{
-		fprintf(stderr, "%s: no total yields file ending in \"%s\"\n",
-			argv[0], TOTAL_YIELDS_END);
-		exit(2);
-	}
-	if (ends_with(argv[2], UNBURNED_YIELDS_END))
-		unburned_yields = argv[2];
-	else if (ends_with(argv[1], UNBURNED_YIELDS_END))
-		unburned_yields = argv[1];
-	else
-	{
-		fprintf(stderr, "%s: no unburned yields file ending in \"%s\"\n",
-			argv[0], UNBURNED_YIELDS_END);
-		exit(2);
+		if (ends_with(argv[c], TOTAL_YIELDS_END))
+		{
+			if (total_yields == NULL)
+				total_yields = argv[c];
+			else
+			{
+				fprintf(stderr, "%s: multiple total yields arguments\n", argv0);
+				exit(2);
+			}
+		}
+		else if (ends_with(argv[c], UNBURNED_YIELDS_END))
+		{
+			if (unburned_yields == NULL)
+				unburned_yields = argv[c];
+			else
+			{
+				fprintf(stderr, "%s: multiple unburned yields arguments\n", argv0);
+				exit(2);
+			}
+		}
+		else if (ends_with(argv[c], PIDS_FILE_END))
+		{
+			if (pids_file == NULL)
+				pids_file = argv[c];
+			else
+			{
+				fprintf(stderr, "%s: multiple particle ids file arguments\n", argv0);
+				exit(2);
+			}
+		}
+		else
+		{
+			fprintf(stderr, "%s: file type of argument %s unknown\n", argv0, argv[c]);
+			exit(2);
+		}
 	}
 
 	// Construct the output file name from the total yields file name
@@ -100,6 +132,9 @@ int main(int argc, char * argv[])
 	// Read in the data from both of the input files
 	read_total(total_data, total_yields);
 	unburned_data = read_unburned(unburned_yields, &particles);
+
+	// Use the particle IDs file to tag those particles NOT processed by Burn
+	tag_unburned_particles(unburned_data, particles, pids_file);
 
 	// Sum the unburned yields data over all the particles
 	sum_unburned(unburned_totals, unburned_data, particles);
@@ -184,7 +219,7 @@ particle * read_unburned(char * file_name, int * particles)
 	buffer[i] = '\0';
 	if (strcmp(buffer, file_start) != 0)
 	{
-		fprintf(stderr, "unburned yields file does not match expectations\n");
+		fprintf(stderr, "%s: parsing unburned yields file failed\n", argv0);
 		exit(3);
 	}
 
@@ -222,8 +257,8 @@ particle * read_unburned(char * file_name, int * particles)
 	data = malloc(lines * sizeof(particle));
 	if (data == NULL)
 	{
-		fprintf(stderr, "could not allocate memory for unburned yields data\n");
-		exit(3);
+		fprintf(stderr, "%s: unburned yields memory allocation failed\n", argv0);
+		exit(4);
 	}
 
 	// Rewind to the start of the file and skip the header line (again)
@@ -248,7 +283,80 @@ particle * read_unburned(char * file_name, int * particles)
 	return data;
 }
 
+// Use the particle IDs file to tag particles that were NOT processed by Burn
+void tag_unburned_particles(particle * data, int particles, char * pids_file)
+{
+	// Declarations
+	FILE * fp;
+	int n_ids, * ids, i;
+
+	// Open the particle IDs file
+	fp = fopen(pids_file, "r");
+
+	// Read the number of particle IDs from the first line of the file
+	fscanf(fp, "n_ids=%d\n", &n_ids);
+
+	// Allocate memory for all the particle IDs
+	ids = malloc(n_ids * sizeof(int));
+	if (ids == NULL)
+	{
+		fprintf(stderr, "%s: particle IDs allocation failure\n", argv0);
+		exit(5);
+	}
+
+	// Read each of the particle IDs from file into the array
+	for (i = 0; i < n_ids; i++)
+		fscanf(fp, "%d\n", &ids[i]);
+
+	// Close the particle IDs file
+	fclose(fp);
+
+	// Tag each particle with a 0 if it's in the file, and a 1 if it isn't
+	for (i = 0; i < particles; i++)
+	{
+		if (binary_search(data[i].pid, ids, n_ids) != -1)
+			data[i].tag = 0;
+		else
+			data[i].tag = 1;
+	}
+
+	// Free the allocated memory
+	free(ids);
+}
+
+// Return the index of target in the SORTED array arr of given length
+// Uses a binary search, so the array needs to be sorted for it to work
+// Returns -1 on failure to find the specified target in the array
+int binary_search(int target, int * arr, int length)
+{
+	// Declarations
+	int lo, hi, mid;
+
+	// Set up search bounds on the entire array
+	lo = 0;
+	hi = length - 1;
+
+	// Search as long as the search space is not of length zero
+	while (hi - lo >= 0)
+	{
+		// Try the index in the middle of the search space
+		mid = (lo + hi) / 2;
+
+		// Restrict the search space or find the target
+		if (arr[mid] > target)
+			hi = mid - 1;
+		else if (arr[mid] < target)
+			lo = mid + 1;
+		else
+			return mid;
+	}
+
+	// The search space ran out, the target's not here
+	return -1;
+}
+
 // Sum the unburned yields masses into a pre-existing totals array
+// Exclude any particles already procesed by Burn (tagged with a 0)
 void sum_unburned(double totals[], particle * data, int particles)
 {
 	// Declarations
@@ -259,8 +367,8 @@ void sum_unburned(double totals[], particle * data, int particles)
 	workspace = malloc(particles * sizeof(double));
 	if (workspace == NULL)
 	{
-		fprintf(stderr, "could not allocate summation workspace\n");
-		exit(4);
+		fprintf(stderr, "%s: summation workspace allocation failed\n", argv0);
+		exit(6);
 	}
 
 	// Loop over every isotope in the SNSPH network and do the summations
@@ -268,7 +376,12 @@ void sum_unburned(double totals[], particle * data, int particles)
 	{
 		// Multiply each particle's mass fraction by its mass to get isotope masses
 		for (j = 0; j < particles; j++)
-			workspace[j] = data[j].mass * data[j].mass_frac[i];
+		{
+			if (data[j].tag)
+				workspace[j] = data[j].mass * data[j].mass_frac[i];
+			else
+				workspace[j] = 0.0;
+		}
 
 		// Calculate the sum of the list of doubles and convert the mass to grams
 		totals[i] = pairs_sum(workspace, particles);
