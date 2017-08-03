@@ -1,0 +1,21 @@
+Notes from Skype Meeting with Brandon Wiggins, 8/3/17
+=====================================================
+
+Brandon is a professor up at Southern Utah University (SUU).
+
+The density info is read in by den_rotate.py, but is not actually used.
+Density is figured out by speading out the mass over volume when plotted.
+It doesn't even use the smoothing length, just estimates it in a way that looks pretty.
+Brandon might send me a better documentation/tutorial for py-sphviewer later on.
+
+As for making isosurfaces and doing 3D ray-tracing...
+For 3D light rendering, Brandon uses a Python application called mayavi.
+For isosurfaces, he maps the particle data to a fine grid and then plots it.
+This is kind of scandalous since the mapping is actually non-unique.
+However, that doesn't matter for isosurfaces, so just don't tell people that step.
+Brandon has a hack job script for grid mapping that he will send to me.
+An industry standard for grid code visualizations is YT. Can use that one.
+Brandon will send the mayavi file for my data file so I can play with it.
+
+He has yet to make a script to plot Fe/Ti, but will send it to me later.
+
