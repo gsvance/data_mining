@@ -211,7 +211,7 @@ int cmpint(const void * i1, const void * i2)
 	return ( (*(int *)i1) - (*(int *)i2) );
 }
 
-// Write the full list of ID numbers out to the plaintext file
+// Write the full list of ID numbers out to the plain text file
 void write_text_ids(char * outfilename, int * all_ids, int tot_ids)
 {
 	// Declarations

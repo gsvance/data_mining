@@ -377,7 +377,8 @@ void sum_unburned(double totals[], particle * data, int particles)
 		// Multiply each particle's mass fraction by its mass to get isotope masses
 		for (j = 0; j < particles; j++)
 		{
-			if (data[j].tag)
+			// Only add a particle to the list if it has been tagged as unburned
+			if (data[j].tag == 1)
 				workspace[j] = data[j].mass * data[j].mass_frac[i];
 			else
 				workspace[j] = 0.0;
@@ -424,6 +425,8 @@ void update_totals(isotope totals[], double unburned[])
 
 // Sum an array of n doubles in a numerically-stable pairwise fashion
 // The array is used as workspace and is RUINED by this operation
+// Not 100% sure how useful this actually is to the program's accuracy
+// It's to keep tiny numbers from vanishing when added to big numbers
 double pairs_sum(double * array, int n)
 {
     // Declarations
