@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 6/2/17 by Greg Vance
+# Last edited 9/1/17 by Greg Vance
 
 import os
 import sys
@@ -32,8 +32,9 @@ PRE_DIRECTORIES = ("sbatch", "queries")
 POST_DIRECTORIES = ("analysis", "sorted_queries")
 
 # Conversion factors for converting SNSPH quantities to CGS units
-SNSPH_MASS = 1e-6 * 1.98855e33  # 1e-6 Msun in grams
-SNSPH_LENGTH = 6.957e10  # 1 Rsun in centimeters
+# "Exact" values taken from an initial.ctl file used by SNSPH
+SNSPH_MASS = 1e-6 * 1.9889e33  # 1e-6 Msun in grams
+SNSPH_LENGTH = 6.955e10  # 1 Rsun in centimeters
 SNSPH_TIME = 100.0  # 100 seconds
 SNSPH_VELOCITY = SNSPH_LENGTH / SNSPH_TIME
 SNSPH_DENSITY = SNSPH_MASS / SNSPH_LENGTH**3

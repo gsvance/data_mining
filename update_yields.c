@@ -4,7 +4,7 @@
 // The identities of the three files are determined by their file name endings
 // Calling this program without the appropriate list of files is an error!
 
-// Last modified 7/24/17 by Greg Vance
+// Last modified 9/1/17 by Greg Vance
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,8 @@
 #define BURN_NETWORK 524
 
 // Constant factors for converting masses between unit systems
-#define SOLAR_MASS 1.98855e33  // The mass of the sun in grams
+// This uses the "exact" value of the SNSPH mass from an initial.ctl file
+#define SOLAR_MASS 1.9889e33  // The mass of the sun in grams
 #define SNSPH_MASS (1e-6 * SOLAR_MASS)  // SNSPH mass in grams (10^-6 Msun)
 
 // Struct to store data from one line of the total yields file
