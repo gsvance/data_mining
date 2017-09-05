@@ -1,7 +1,8 @@
 // Modified version of entropy for extracting unburned yields from cco2
 // Identities of the 20 network isotopes must be inferred from other sims
+// Infering those led me astray... seems that n, p, and 4He are at the end
 
-// Last edited 7/5/17 by Greg Vance
+// Last edited 9/5/17 by Greg Vance
 
 /* 	
 	Entropy
@@ -66,15 +67,19 @@ typedef struct {
 
 // The identities of the 20 network isotopes as best I can infer from the other sims
 // There are from 50Am, using interactive Python to dissect the .unburned.out file header
-int iso_nz[20] = {0, 1, 2, 6, 8, 10, 12, 14, 15, 16, 18, 20, 20, 21, 22, 24, 26, 26, 27, 28};
-int iso_nn[20] = {1, 0, 2, 6, 8, 10, 12, 14, 16, 16, 18, 20, 24, 23, 22, 24, 26, 30, 29, 28};
+// The isotopes from 50Am are wrong and have been commented out at this point
+// Instead, we took the first three isotopes n, p, and 4He and put them at the end
+//int iso_nz[20] = {0, 1, 2, 6, 8, 10, 12, 14, 15, 16, 18, 20, 20, 21, 22, 24, 26, 26, 27, 28};
+int iso_nz[20] = {6, 8, 10, 12, 14, 15, 16, 18, 20, 20, 21, 22, 24, 26, 26, 27, 28, 0, 1, 2};
+//int iso_nn[20] = {1, 0, 2, 6, 8, 10, 12, 14, 16, 16, 18, 20, 24, 23, 22, 24, 26, 30, 29, 28};
+int iso_nn[20] = {6, 8, 10, 12, 14, 16, 16, 18, 20, 24, 23, 22, 24, 26, 30, 29, 28, 1, 0, 2};
 
 /*
 Here are some notes on extracting the isotope data from the particle struct.
 The final line in the particle struct stores all the unburned yields data:
 	- f1..f20 are the mass fractions X for each nucleus.
-	- The isotopes these correspond to are the same as for the other sims.
-	- The iso_p and iso_m arrays are here to label the 20 isotopes.
+	- The isotopes these correspond to are NOT the same as for other sims.
+	- The iso_nz and iso_nn arrays are here to label the 20 isotopes.
 There are 20 isotopes in the SNSPH network that is being used here.
 The cco2 SDF files don't have those two extra isotopes like other sims do.
 Extraction should probably only be used for the final timestep SDF files.
