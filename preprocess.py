@@ -126,8 +126,9 @@ def write_entropy_scripts(paths):
 
 # Write the single sbatch script needed for running hdf5_pid_list
 def write_pid_script(paths):
-	# First check for the existance of the required HDF5 files
-	if "hdf5" not in paths:
+	# First check for the existance of the required HDF5 files to do this
+	# The PIDs are for the unburned yields, so only do this if there are SDF files too
+	if "hdf5" not in paths or "sdf" not in paths:
 		return
 	# Print a progress indicator message
 	print "\nGenerating sbatch script for hdf5_pid_list"
@@ -148,7 +149,7 @@ def write_pid_script(paths):
 	# Not sure how long they should run for, but 3 hours ought to be enough time
 	walltime = "0-03:00"
 	# Combine everything and write the actual script file
-	sn.write_script(scriptfile, command, stdout, stdin, walltime)
+	sn.write_script(scriptfile, command, stdout, stderr, walltime)
 
 # Submit all of the written sbatch scripts to the cluster for execution
 def sbatch_submit(paths):
@@ -169,7 +170,7 @@ def sbatch_submit(paths):
 		# No scripts, so nothing to submit
 		entropy = False
 	# Determine whether to submit the PID listing script to the cluster
-	if "hdf5" in paths:
+	if "hdf5" in paths and "sdf" in paths:
 		# Do not use supercomputer time without the user's consent
 		hdf5_pid_list = sn.ask_user("Proceed with submitting hdf5_pid_list script?")
 	else:
