@@ -189,10 +189,19 @@ def sbatch_submit(paths):
 		elif script[:3] == "PID":
 			# This is the hdf5_pid_list script
 			submit = hdf5_pid_list
-		# If approved, proceed with submitting the script
+		# If approved, proceed with submitting the script to the cluster
 		if submit:
-			# Submit the file through sbatch
-			sn.sbatch(os.path.join(paths["sbatch"], script))
+			# Put together the script's full path
+			scriptpath = os.path.join(paths["sbatch"], script)
+			# Submit the file through sbatch and get sbatch's exit code
+			exitcode = sn.sbatch(scriptpath)
+			# If the submission failed, stop and ask the user whether to try again
+			# This often happens if preprocess.py tries to submit too many jobs at once
+			while exitcode != 0:
+				# Let the user diagnose the sbatch output and choose whether to retry
+				if sn.ask_user("Submission failure was detected. Try again?"):
+					# Try it again and continue the while loop if it fails again
+					exitcode = sn.sbatch(scriptpath)
 
 main()
 

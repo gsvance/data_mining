@@ -299,14 +299,16 @@ def write_script(scriptfile, command, stdout, stderr, walltime):
 	# Print the name of the script file when finished
 	print scriptfile
 
-# Submit an sbatch script to the cluster from within python
+# Submit an sbatch script from within python, return the sbatch exit code
 def sbatch(filename):
 	# Construct the appropriate submit command
 	command = ["sbatch", filename]
 	# Print the effective shell command that is about to be run
 	print ">> " + ' '.join(command)
 	# Call a subprocess to submit the script with the sbatch command
-	subprocess.call(command)
+	exit_code = subprocess.call(command)
+	# Return the exit code that sbatch sent
+	return exit_code
 
 
 # SNSPH CONVERSION UTILITIES
