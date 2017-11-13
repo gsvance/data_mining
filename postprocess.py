@@ -11,7 +11,7 @@
 #   - Peak explosion temperatures for each particle (plot)
 #   - Selected elemental abundances for each particle (plot)
 
-# Last edited 7/9/17 by Greg Vance
+# Last edited 11/13/17 by Greg Vance
 
 # Usage example:
 #	./postprocess.py sn_data/jet3b
@@ -84,7 +84,8 @@ def extract_yields(paths):
 # Run the update_yields program to create an updated yields file for the simulation
 def update_yields(paths):
 	# Make sure the simulation has SDF files before trying to use SDF data
-	if "sdf" not in paths:
+	# Also skip this if we somehow have no HDF5 data to use in the first place
+	if "sdf" not in paths or "hdf5" not in paths:
 		# Skip this function if no files exist
 		return
 	# Print a quick progress message for the user
@@ -102,8 +103,10 @@ def update_yields(paths):
 	# Construct the full path to the simulation's total yields file
 	yields = "%s_yields.out" % (simname)
 	yields_path = os.path.join(paths["analysis"], yields)
+	# Construct the full path to the particle IDs file
+	pids_path = os.path.join(paths["hdf5"], simname + "_pids.out")
 	# Assemble the full shell command to run the executable
-	command = [UPDATE_YIELDS_PATH, yields_path, unburned_path]
+	command = [UPDATE_YIELDS_PATH, yields_path, unburned_path, pids_path]
 	# Print the command on screen before it is executed
 	print ">> " + ' '.join(command)
 	# Call a subprocess to execute the program from within Python
