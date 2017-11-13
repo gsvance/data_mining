@@ -107,7 +107,10 @@ int main(int argc, char * argv[])
 			c++;
 		// Otherwise, read the HDF5 file
 		else
+		{
+			printf("Now reading file %d of %d\n", i + 1, n_hdf5);
 			ids[i++] = read_hdf5_ids(argv[c], &n_ids[i]);
+		}
 	}
 
 	// Figure out the total number of IDs and allocate enough space for them all
@@ -177,7 +180,7 @@ int * read_hdf5_ids(char * hdf5name, int * n_particles)
 	int * id_list;
 
 	// Print a progress message for the user
-	printf("Currently reading file %s\n", hdf5name);
+	printf("Opening file %s\n", hdf5name);
 
 	// Use the SE library to open the HDF5 file
 	file_id = SEopen(hdf5name);

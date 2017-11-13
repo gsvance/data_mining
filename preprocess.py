@@ -4,9 +4,10 @@
 # Identify all of the directories, then set up the preprocessing directories
 # Generate the appropriate sbatch scripts for all burn_query and entropy runs
 # Sneak in extraction for the unburned yields using unburned as well
+# On a related note, also extract the list of particle IDs processed by Burnf
 # Finish by submitting those scripts to the saguaro cluster for execution
 
-# Last edited 6/2/17 by Greg Vance
+# Last edited 11/13/17 by Greg Vance
 
 # Usage example:
 #	./preprocess.py sn_data/jet3b
@@ -18,7 +19,7 @@ import os
 import sn_utils as sn
 
 # Full path to the executable run_query.py script for running burn_query
-RUN_QUERY_PATH = "/home/gsvance/data_mining/run_query.py"
+RUNQUERY_PATH = "/home/gsvance/data_mining/run_query.py"
 # Full path to the compiled entropy executable file
 ENTROPY_PATH = "/home/gsvance/data_mining/entropy"
 # Full path to the compiled SDF Reader executable for cco2
@@ -26,6 +27,8 @@ CCO2SDF_PATH = "/home/gsvance/data_mining/cco2-SDF-reader"
 # Full paths to the compiled unburned executable files
 UNBURNED_PATH = "/home/gsvance/data_mining/unburned"
 CCO2UNBURN_PATH = "/home/gsvance/data_mining/cco2-unburned"
+# Full path to the compiled HDF5 file particle ID lister
+HDF5PID_PATH = "/home/gsvance/data_mining/hdf5_pid_list"
 
 # Main program for preprocessing (called at end of this file)
 def main():
@@ -42,6 +45,8 @@ def main():
 	write_burn_query_scripts(paths, isotopes)
 	# Determine which SDF files to process based on tpos values, make sbatch scripts for them too
 	write_entropy_scripts(paths)
+	# Write an sbatch script for listing the particle IDs that were processed by Burnf
+	write_pid_script(paths)
 	# Submit all of the sbatch scripts to the saguaro cluster via slurm
 	sbatch_submit(paths)
 	# Print that the script has completed
@@ -68,10 +73,10 @@ def write_burn_query_scripts(paths, isotopes):
 		outfile = os.path.join(paths["queries"], iso + ".out")
 		# Construct a wild card expression that will expand to the list of HDF5 file names
 		hdf5_list = os.path.join(paths["hdf5"], "*.h5")
-		# Check for the fabulously non-abundant isotope 40K and set the abundance threshold accordingly
+		# Check for fabulously non-abundant isotopes like 40K and set their abundance threshold lower
 		fmass_cut = (sn.FMASS_CUT_LOW if isotope in sn.ISOTOPES_LOW else sn.FMASS_CUT)
 		# Put together the full run_query command that needs to be submitted
-		command = "\n%s -i %s -a %s -o %s %s\n" % (RUN_QUERY_PATH, isotope, fmass_cut, outfile, hdf5_list)
+		command = "\n%s -i %s -a %s -o %s %s\n" % (RUNQUERY_PATH, isotope, fmass_cut, outfile, hdf5_list)
 		# Assemble the slurm stdout file name (in sbatch directory using the job id)
 		stdout = os.path.join(paths["sbatch"], "slurm.%j.ISO" + iso + ".out")
 		# Assemble the slurm stderr file name in the same way
@@ -119,10 +124,36 @@ def write_entropy_scripts(paths):
 		# Write the sbatch script using all these parameters
 		sn.write_script(scriptfile, command, stdout, stderr, walltime)
 
+# Write the single sbatch script needed for running hdf5_pid_list
+def write_pid_script(paths):
+	# First check for the existance of the required HDF5 files
+	if "hdf5" not in paths:
+		return
+	# Print a progress indicator message
+	print "\nGenerating sbatch script for hdf5_pid_list"
+	# Get the simulation name from the head directory
+	simname = os.path.basename(paths["head"])
+	# Construct the name of the sbatch script file to create
+	scriptfile = os.path.join(paths["sbatch"], "PID.sh")
+	# Construct the name of the PIDs output file the script will create
+	outfile = os.path.join(paths["hdf5"], simname + "_pids.out")
+	# Construct a wild card expression that will expand to the list of HDF5 files
+	hdf5_files = os.path.join(paths["hdf5"], "*.h5")
+	# Put together the command the script will run
+	command = "\n%s -o %s %s\n" % (HDF5PID_PATH, outfile, hdf5_files)
+	# Assemble the names of the slurm stdout and stderr files
+	stdout = os.path.join(paths["sbatch"], "slurm.%j.PID.out")
+	stderr = os.path.join(paths["sbatch"], "slurm.%j.PID.out")
+	# These can run kind of slow since they use the SE library like burn_query does
+	# Not sure how long they should run for, but 3 hours ought to be enough time
+	walltime = "0-03:00"
+	# Combine everything and write the actual script file
+	sn.write_script(scriptfile, command, stdout, stdin, walltime)
+
 # Submit all of the written sbatch scripts to the cluster for execution
 def sbatch_submit(paths):
 	# Print a progress indicator at this point
-	print "\nSubmitting sbatch scripts to the cluster"
+	print "\nPreparing to submit sbatch scripts to the cluster"
 	# Determine whether to submit burn_query scripts to the cluster
 	if "hdf5" in paths:
 		# Do not use supercomputer time without the user's consent
@@ -137,17 +168,27 @@ def sbatch_submit(paths):
 	else:
 		# No scripts, so nothing to submit
 		entropy = False
-	# Submit each authorized sbatch script to the cluster for execution, they are the files with .sh extensions
+	# Determine whether to submit the PID listing script to the cluster
+	if "hdf5" in paths:
+		# Do not use supercomputer time without the user's consent
+		hdf5_pid_list = sn.ask_user("Proceed with submitting hdf5_pid_list script?")
+	else:
+		# No script to submit
+		hdf5_pid_list = False
+	# Submit each authorized sbatch script to the cluster, they are all of the .sh files
 	for script in [f for f in os.listdir(paths["sbatch"]) if sn.get_ext(f) == "sh"]:
 		# Should this script be submitted to the cluster?
 		submit = False
-		# Determine if this is a burn_query script or an entropy script
+		# Determine which type of script is being considered
 		if script[:3] == "ISO":
 			# This is a burn_query script
 			submit = burn_query
 		elif script[:3] == "SDF":
 			# This is an entropy script
 			submit = entropy
+		elif script[:3] == "PID":
+			# This is the hdf5_pid_list script
+			submit = hdf5_pid_list
 		# If approved, proceed with submitting the script
 		if submit:
 			# Submit the file through sbatch
