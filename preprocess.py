@@ -144,7 +144,7 @@ def write_pid_script(paths):
 	command = "\n%s -o %s %s\n" % (HDF5PID_PATH, outfile, hdf5_files)
 	# Assemble the names of the slurm stdout and stderr files
 	stdout = os.path.join(paths["sbatch"], "slurm.%j.PID.out")
-	stderr = os.path.join(paths["sbatch"], "slurm.%j.PID.out")
+	stderr = os.path.join(paths["sbatch"], "slurm.%j.PID.err")
 	# These can run kind of slow since they use the SE library like burn_query does
 	# Not sure how long they should run for, but 3 hours ought to be enough time
 	walltime = "0-03:00"
