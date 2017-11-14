@@ -3,7 +3,7 @@
 # Wrapper for burn_query that takes arguments from command line for a single isotope query
 # Eventually, I hope to just rewrite burn_query's interface, but this will help out for now
 
-# Last edited 4/26/16 by Greg Vance
+# Last edited 11/13/17 by Greg Vance
 
 # Example usage:
 #	./run_query.py -i 26Al -a 6 -o 26Al.out jet3b/j3b.dir/*.h5
