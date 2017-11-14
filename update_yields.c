@@ -205,7 +205,7 @@ particle * read_unburned(char * file_name, int * particles)
 	FILE * fp;
 	int start_len, i;
 	char file_start[] = "ID, Mass";
-	char buffer[100];
+	char buffer[500];
 	int lines, c;
 	particle * data;
 	int l;

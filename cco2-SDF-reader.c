@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	// Declarations
 	int h, i, sz, nobj;
 	char * filename;
-	char out_file[100];
+	char out_file[500];
 	int offset;
 	particle part;
 	FILE * fp, * ofp;

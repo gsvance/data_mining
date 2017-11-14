@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	// Declarations, including the known header offset of 1600 bytes
 	int h, i, sz, nobj;
 	char * filename;
-	char out_file[100];
+	char out_file[500];
 	int offset = 1600;
 	particle part, first;
 	FILE * fp, * ofp;

@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
 // Declarations
 	int i, j, k;
 	int sefp, nspecies, nread, printflag, nobj, *nn, *nz, *ids;
-	char buff[50];
+	char buff[500];
 	char *pos;
-	char tmp[50];
+	char tmp[500];
 	FILE *filevar;
 	NODE *head = NULL ;
 	NODE *curr = NULL ;
