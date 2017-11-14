@@ -46,6 +46,8 @@ def main():
 	paths = sn.check_dirs(paths, sn.PRE_DIRECTORIES)
 	# Make any new directories that need to be made before processing continues
 	paths = sn.make_dirs(paths, sn.POST_DIRECTORIES)
+	# Clean out extraneous sbatch output files before we do anything else
+	sn.sbatch_cleanup(paths)
 	# Extract the simulation's total yields and put them in the correct file
 	extract_yields(paths)
 	# Update the simulation's total yields with unburned data and save that too

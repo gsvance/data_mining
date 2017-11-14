@@ -46,8 +46,10 @@ def make_inputs(isotope, abundance, outfile):
 	nn, nz = nn_nz(isotope)
 	# Check if the outfile already exists (to avoid overwrites or strange appending behavior)
 	if os.path.isfile(outfile):
-		# Raise an error and stop everything!
-		raise IOError("specified outfile '%s' already exists!" % (outfile))
+		# Raise an error and stop everything! Flag this as an overwrite failure
+		error_line_1 = "specified outfile '%s' already exists!\n" % (outfile)
+		error_line_2 = "!!! OVERWRITE FAILURE IN RUN_QUERY, BURN_QUERY WAS NOT RUN !!!"
+		raise IOError(error_line_1 + error_line_2)
 	# Start an empty list to store the inputs for burn_query
 	inputs = []
 	# Select option 1 (enter a new query)

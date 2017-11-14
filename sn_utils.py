@@ -1,11 +1,12 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 9/1/17 by Greg Vance
+# Last edited 11/13/17 by Greg Vance
 
 import os
 import sys
 import subprocess
+import glob
 
 from elements import SYMBOLS
 
@@ -309,6 +310,38 @@ def sbatch(filename):
 	exit_code = subprocess.call(command)
 	# Return the exit code that sbatch sent
 	return exit_code
+
+# Clean up all the files in a simulation's sbatch dir prior to postprocessing
+# Delete any of the sbatch job .out or .err files that are completely empty
+# Also delete any .err files that contain run_query.py overwrite errors
+def sbatch_cleanup(paths):
+	# Print a quick alert message to the program user
+	print "\nCleaning out sbatch files in %s" % (paths["sbatch"])
+	# Use glob to make lists of all the simulation's slurm .out and .err files
+	out_files = glob.glob(os.path.join(paths["sbatch"], "slurm.*.*.out"))
+	err_files = glob.glob(os.path.join(paths["sbatch"], "slurm.*.*.err"))
+	# Loop over all of the simulation's the slurm .out and .err files
+	for each_file in out_files + err_files:
+		# Check if each file is empty (has zero size)
+		if os.path.getsize(each_file) == 0:
+			# Delete those files that are found to be empty
+			os.remove(each_file)
+	# Re-make the list of slurm .err files since some may have been deleted
+	err_files = glob.glob(os.path.join(paths["sbatch"], "slurm.*.*.err"))
+	# This string is a convenient signal for run_query.py overwrite failure
+	signal = "!!! OVERWRITE FAILURE IN RUN_QUERY, BURN_QUERY WAS NOT RUN !!!"
+	# Loop over each remaining slurm .err file again
+	for err_file in err_files:
+		# Open the file so we can look at the contents
+		file_object = open(err_file, "r")
+		# Read the file contents into a python string
+		contents = file_object.read()
+		# Close the open file, we're done with it
+		file_object.close()
+		# Check for the signal phrase in the contents of the file
+		if contents.find(signal) != -1:
+			# Delete the file if it has the phrase
+			os.remove(err_file)
 
 
 # SNSPH CONVERSION UTILITIES
