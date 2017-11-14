@@ -16,6 +16,8 @@ class Particler:
 		self.cco2 = ( filename.find("r3g_1M_cco2_sph.") != -1 )
 		# Flag for when all particles in the file are exhaused
 		self.empty = False
+		# Set up the ID tracker attribute with a negative dummy value
+		self.next_id = -999
 		# Read the first line from the file
 		self._get_line()
 	# Get the actual next line from the file and split it into a list
