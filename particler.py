@@ -3,13 +3,15 @@
 # Checks that the line's particle ID matches the desired one and returns [] if not
 # Previously a part of the file postprocessing.py, but it is now encapsulated here
 
-# Last edited 4/3/17 by Greg Vance
+# Last edited 11/14/17 by Greg Vance
 
 class Particler:
 	# Initialize the object and start reading the given file
 	def __init__(self, filename):
+		# Store the name of the file as an attribute
+		self.filename = filename
 		# Open the designated file for reading
-		self.file = open(filename, 'r')
+		self.file = open(self.filename, 'r')
 		# The SDF files from cco2 are... special. Do we have the honor?
 		self.cco2 = ( filename.find("r3g_1M_cco2_sph.") != -1 )
 		# Flag for when all particles in the file are exhaused
@@ -57,7 +59,10 @@ class Particler:
 				return self.get_next(id)
 			else:
 				# Something, somewhere is very wrong
-				raise ValueError("ID %s is higher than expected??" % (id))
+				err = "requested ID %d is higher than was expected" % (id)
+				err += "\n current ID %d was not requested" % (self.next_id)
+				err += "\n file name: %s" % (self.filename)
+				raise ValueError(err)
 	# Method to return whether the file is out of particles
 	def is_empty(self):
 		return self.empty
