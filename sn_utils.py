@@ -20,7 +20,7 @@ FMASS_CUT = '6'
 # Mass fraction threshold to use for low-abundance isotopes, 1e-10
 FMASS_CUT_LOW = '10'
 # Rare isotopes that need the low cut to be used for them
-ISOTOPES_LOW = ["1n", "40K"]
+ISOTOPES_LOW = ("1n", "13C", "17O", "40K", "41K", "43Ca", "49Ti")
 
 # Location of the file listing all isotopes to run queries on
 ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
