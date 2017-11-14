@@ -30,11 +30,21 @@ class Particler:
 		split_line = line.strip().split(", ")
 		# Convert the line's particle ID to an integer
 		try:
-			self.next_id = int(split_line[0])
+			new_id = int(split_line[0])
 		# Error occurs for alphabetic headers, get the next line instead
 		except ValueError:
 			self._get_line()
 			return
+		# Check whether burn_query went screwy and make a file with repeated IDs
+		if new_id > self.next_id:
+			# Update to the next ID number if it's a sensible one
+			self.next_id = new_id
+		# Otherwise, the next ID number is apparently either repeated or smaller
+		else: # new_id <= self.next_id
+			# Raise an error and print some info about it to the user
+			err = "repeated or unsorted ID in file %s" % (self.filename)
+			err += "\n new_id %d is <= next_id %d" % (new_id, self.next_id)
+			raise ValueError(err)
 		# Save the line for a future call of the get_next() method
 		self.next_line = split_line
 	# Return the next line of the file if the ID matches, and [] otherwise
