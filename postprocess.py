@@ -258,10 +258,12 @@ def get_peaks(id, entropy_early):
 	for early in entropy_early:
 		# Get line from the file
 		line = early.get_next(id)
-		# Get the temperature and density
-		# Currently entries 4 and 7 (WATCH OUT IF THIS CHANGES)
-		temp = float(line[4])
-		rho = float(line[7])
+		# Check which columns of the file have the temperature and density
+		temp_col = early.find_column("Temp")
+		rho_col = early.find_column("rho")
+		# Get the temperature and density values
+		temp = float(line[temp_col])
+		rho = float(line[rho_col])
 		# Save the (temp, rho) pair together
 		temp_rho_list.append((temp, rho))
 	# Find the (temp, rho) pair that had the peak temperature
@@ -273,8 +275,9 @@ def get_peaks(id, entropy_early):
 def get_efrac(id, entropy_initial):
 	# Get the line from the progenitor entropy file
 	line = entropy_initial.get_next(id)
-	# Ye is currently entry number 13 (WATCH OUT IF THIS CHANGES)
-	ye = line[13]
+	# Check which column has the Ye value and extract it
+	col = entropy_initial.find_column("Y_e")
+	ye = line[col]
 	# Return the value of Ye that was extracted
 	return ye
 

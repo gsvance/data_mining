@@ -3,7 +3,7 @@
 # Checks that the line's particle ID matches the desired one and returns [] if not
 # Previously a part of the file postprocessing.py, but it is now encapsulated here
 
-# Last edited 11/14/17 by Greg Vance
+# Last edited 11/21/17 by Greg Vance
 
 class Particler:
 	# Initialize the object and start reading the given file
@@ -18,6 +18,8 @@ class Particler:
 		self.empty = False
 		# Set up the ID tracker attribute with a negative dummy value
 		self.next_id = -999
+		# Set up a dummy value for the file's header entries
+		self.header = []
 		# Read the first line from the file
 		self._get_line()
 	# Get the actual next line from the file and split it into a list
@@ -33,8 +35,19 @@ class Particler:
 		# Convert the line's particle ID to an integer
 		try:
 			new_id = int(split_line[0])
-		# Error occurs for alphabetic headers, get the next line instead
+		# This error will occur when reading alphabetic header lines
 		except ValueError:
+			# Might as well save the header line since we have it
+			if self.header == []:
+				self.header = split_line
+			# Check for if the file has a repeat header line
+			elif self.header == split_line:
+				print "Warning: repeated header in file %s" % (self.filename)
+			# If there are multiple headers and they don't match, that's a problem
+			else:
+				err = "unmatched header lines in file %s" % (self.filename)
+				raise ValueError(err)
+			# Keep looking for actual data; get the next line from the file
 			self._get_line()
 			return
 		# Check whether burn_query went screwy and make a file with repeated IDs
@@ -75,6 +88,13 @@ class Particler:
 				err += "\n current ID %d was not requested" % (self.next_id)
 				err += "\n file name: %s" % (self.filename)
 				raise ValueError(err)
+	# Read the file's header line and return the column index of column_name
+	def find_column(self, column_name):
+		# Before searching, make sure there's a header to search through
+		if self.header == []:
+			raise ValueError("file %s has no header to search" % (self.filename))
+		# Search the header line for the given column name string
+		return self.header.index(column_name)
 	# Method to return whether the file is out of particles
 	def is_empty(self):
 		return self.empty
