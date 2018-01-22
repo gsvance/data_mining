@@ -11,7 +11,7 @@
 #   - Peak explosion temperatures for each particle (plot)
 #   - Selected elemental abundances for each particle (plot)
 
-# Last edited 11/13/17 by Greg Vance
+# Last edited 1/22/18 by Greg Vance
 
 # Usage example:
 #	./postprocess.py sn_data/jet3b
@@ -160,7 +160,7 @@ def write_particles(paths, abundances):
 	# Generate a header for the output file and the content of the columns file
 	header = ["id", "x", "y", "z", "vx", "vy", "vz", "mass", "h", "density", "peak temp", "peak density", "Y_{e}"]
 	for abun in abundances:
-		header.append("A_{%s}" % (abun))
+		header.append("X_{%s}" % (abun))
 	outfile.write(", ".join(header) + '\n')
 	with open(os.path.join(paths["analysis"], "columns"), 'w') as columns:
 		columns.write('\n'.join(header) + '\n')
