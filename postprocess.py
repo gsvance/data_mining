@@ -254,17 +254,19 @@ def query_files_dict(paths, abundances):
 def get_peaks(id, entropy_early):
 	# Make a list to store the temperatures and densities
 	temp_rho_list = []
+	# Tally the number of files with missing data for this particle ID
+	missing = 0
 	# Get the temp and rho from each file
 	for early in entropy_early:
 		# Get line from the file
 		line = early.get_next(id)
 		# Check whether a line from the file was actually returned
 		if line == []:
-			# For now, return zeros whenever even one file has missing data
-			return (str(0.), str(0.))
-			## If not, then just append a pair of zeros and move on
-			#temp_rho_list.append((0., 0.))
-			#continue
+			# Tally up one file with missing data for this ID
+			missing += 1
+			# If no data, then just append a pair of zeros and move on
+			temp_rho_list.append((0., 0.))
+			continue
 		# Check which columns of the file have the temperature and density
 		temp_col = early.find_column("Temp")
 		rho_col = early.find_column("rho")
@@ -273,7 +275,11 @@ def get_peaks(id, entropy_early):
 		rho = float(line[rho_col])
 		# Save the (temp, rho) pair together
 		temp_rho_list.append((temp, rho))
-	# Find the (temp, rho) pair that had the peak temperature
+	# For now, return zeros whenever even one file has missing data
+	# The for loop above needs to exist to query the files either way
+	if missing > 0:
+		return (str(0.), str(0.))
+	# Otherwise, find the (temp, rho) pair that had the peak temperature
 	peak = max(temp_rho_list, key=lambda x : x[0])
 	# Return the peak temp and rho as a pair of strings
 	return str(peak[0]), str(peak[1])
