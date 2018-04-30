@@ -260,9 +260,11 @@ def get_peaks(id, entropy_early):
 		line = early.get_next(id)
 		# Check whether a line from the file was actually returned
 		if line == []:
-			# If not, then just append a pair of zeros and move on
-			temp_rho_list.append((0., 0.))
-			continue
+			# For now, return zeros whenever even one file has missing data
+			return (str(0.), str(0.))
+			## If not, then just append a pair of zeros and move on
+			#temp_rho_list.append((0., 0.))
+			#continue
 		# Check which columns of the file have the temperature and density
 		temp_col = early.find_column("Temp")
 		rho_col = early.find_column("rho")
