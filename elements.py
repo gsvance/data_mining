@@ -1,7 +1,7 @@
 # Just a couple of lookup tables for the periodic table...
 # Used by the sn_utils library for recognizing isotope names
 
-# Last edited 4/26/16 by Greg Vance
+# Last edited 9/10/18 by Greg Vance
 
 # Full lookup table of all the elemental symbols and names
 # Each element's index in the tuple corresponds to its Z value
@@ -118,12 +118,12 @@ ELEMENTS = (	('n', 'Neutronium'),
 		('Ds', 'Darmstadtium'),
 		('Rg', 'Roentgenium'),
 		('Cn', 'Copernicium'),
-		('Uut', 'Ununtrium'),
+		('Nh', 'Nihonium'),
 		('Fl', 'Flerovium'),
-		('Uup', 'Ununpentium'),
+		('Mc', 'Moscovium'),
 		('Lv', 'Livermorium'),
-		('Uus', 'Ununseptium'),
-		('Uuo', 'Ununoctium') )
+		('Ts', 'Tennessine'),
+		('Og', 'Oganesson') )
 
 # Simplified lookup table containing only the elemental symbols
 SYMBOLS = tuple(element[0] for element in ELEMENTS)
