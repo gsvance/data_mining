@@ -15,4 +15,4 @@ n He C O Ne Na Mg Al Si P S Ar K Ca Ti Fe Ni
 44Ti 46Ti 47Ti 48Ti 49Ti 50Ti
 48Cr
 54Fe 56Fe 57Fe 60Fe
-56Ni 61Ni 62Ni
+56Ni 58Ni 60Ni 61Ni 62Ni
