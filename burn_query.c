@@ -413,44 +413,16 @@ int get_nz()
 
 double get_fmass()
 {
-	int fget ;
-	double ftemp = 0 ;
+	int fget;
+	double ftemp = 0;
+	char str[10];
+	
 	printf("\nFractional Mass Threshold? \n");
 	printf("\nin the form of: cut-off values below 10 to the -n");
 	printf("\nwhere n is what you enter now\n\n");
-	scanf("%d" , &fget);
-	switch(fget)
-	{
-		case 1: 
-			ftemp = 1E-1;
-			break;
-		case 2:
-			ftemp = 1E-2;
-			break;
-		case 3:
-			ftemp = 1E-3;
-			break;
-		case 4:
-			ftemp = 1E-4;
-			break;
-		case 5:
-			ftemp = 1E-5;
-			break;
-		case 6:
-			ftemp = 1E-6;
-			break;
-		case 7:
-			ftemp = 1E-7;
-			break;
-		case 8:
-			ftemp = 1E-8;
-			break;
-		case 9:
-			ftemp = 1E-9;
-			break;
-		case 10:
-			ftemp = 1E-10;
-			break;
-	}
-	return(ftemp);
+	scanf("%d", &fget);
+	
+	sprintf(str, "1E%d", -fget);
+	sscanf(str, "%lE", &ftemp);
+	return ftemp;
 }
