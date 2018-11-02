@@ -66,8 +66,8 @@ typedef struct {
 } particle;
 
 // The identities of the 20 network isotopes as best I can infer from the other sims
-// There are from 50Am, using interactive Python to dissect the .unburned.out file header
-// The isotopes from 50Am are wrong and have been commented out at this point
+// These are from 50Am, using interactive Python to dissect the .unburned.out file header
+// !! The isotopes from 50Am are wrong and have been commented out at this point !!
 // Instead, we took the first three isotopes n, p, and 4He and put them at the end
 //int iso_nz[20] = {0, 1, 2, 6, 8, 10, 12, 14, 15, 16, 18, 20, 20, 21, 22, 24, 26, 26, 27, 28};
 int iso_nz[20] = {6, 8, 10, 12, 14, 15, 16, 18, 20, 20, 21, 22, 24, 26, 26, 27, 28, 0, 1, 2};
