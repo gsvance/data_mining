@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 11/13/17 by Greg Vance
+# Last edited 5/7/19 by Greg Vance
 
 import os
 import sys
@@ -13,14 +13,15 @@ from elements import SYMBOLS
 
 # GLOBAL CONSTANTS
 
-# The maximum value of tpos to process using entropy, excepting the final timestep
+# The max value of tpos to process using entropy, excepting the final timestep
 TPOS_MAX = 1.0
 # Mass fraction threshold to use for all queries, e.g., 6 indicates 1e-6
 FMASS_CUT = '6'
-# Mass fraction threshold to use for low-abundance isotopes, 1e-10
+# Mass fraction threshold to use for isotopes needing a low cut, 1e-10
 FMASS_CUT_LOW = '10'
-# Rare isotopes that need the low cut to be used for them
-ISOTOPES_LOW = ("1n", "13C", "17O", "40K", "41K", "43Ca", "49Ti")
+# Isotopes that need the lower cut for various reasons
+ISOTOPES_LOW = ("1n", "12C", "13C", "14N", "15N", "17O", \
+	"40K", "41K", "43Ca", "49Ti")
 
 # Location of the file listing all isotopes to run queries on
 ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
