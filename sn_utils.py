@@ -20,9 +20,18 @@ FMASS_CUT = '6'
 # Mass fraction threshold to use for isotopes needing a low cut, 1e-10
 FMASS_CUT_LOW = '10'
 # Isotopes that need the lower cut for various reasons
-ISOTOPES_LOW = ("1n", "12C", "13C", "14N", "15N", "17O", \
-	"40K", "41K", "43Ca", "49Ti")
-
+ISOTOPES_LOW = ("1n",
+	"12C", "13C",
+	"14N", "15N",
+	"16O", "17O", "18O",
+	"26Al", "27Al",
+	"28Si", "29Si", "30Si",
+	"40K", "41K",
+	"43Ca",
+	"49Ti",
+	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe"
+	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni")
+Al Si Fe Ni
 # Location of the file listing all isotopes to run queries on
 ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
 # Location of the file listing all elements and isotopes to collect for plots
