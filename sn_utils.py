@@ -31,7 +31,7 @@ ISOTOPES_LOW = ("1n",
 	"49Ti",
 	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe"
 	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni")
-Al Si Fe Ni
+
 # Location of the file listing all isotopes to run queries on
 ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
 # Location of the file listing all elements and isotopes to collect for plots
