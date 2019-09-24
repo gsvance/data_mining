@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 5/7/19 by Greg Vance
+# Last edited 9/24/19 by Greg Vance
 
 import os
 import sys
@@ -21,6 +21,8 @@ FMASS_CUT = '6'
 FMASS_CUT_LOW = '10'
 # Isotopes that need the lower cut for various reasons
 ISOTOPES_LOW = ("1n",
+	"7Be", "9Be", "10Be",
+	"10B", "11B",
 	"12C", "13C",
 	"14N", "15N",
 	"16O", "17O", "18O",
