@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 9/24/19 by Greg Vance
+# Last edited 11/15/19 by Greg Vance
 
 import os
 import sys
@@ -30,8 +30,8 @@ ISOTOPES_LOW = ("1n",
 	"28Si", "29Si", "30Si",
 	"40K", "41K",
 	"43Ca",
-	"49Ti",
-	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe"
+	"44Ti", "46Ti", "47Ti", "48Ti", "49Ti", "50Ti",
+	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe",
 	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni")
 
 # Location of the file listing all isotopes to run queries on
