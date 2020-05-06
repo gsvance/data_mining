@@ -3,10 +3,10 @@
 # This script sorts the lines in the CSV files made by burn_query and entropy
 # Keeps exactly one header line and sorts the other rows by their particle IDs 
 # Not sure if this is necessary for entropy outfiles, but it will work fine
-# This is definitely a necessary step for processing the burn_query outfiles
+# This is definitely a necessary step for DM processing the burn_query outfiles
 # They are a mess with the IDs out of order and multiple headers in the middle
 
-# Last edited 5/3/16 by Greg Vance
+# Last modified 6 May 2020 by Greg Vance
 
 # Check for the infile and outfile arguments
 if [ $# -ne 2 ] ; then

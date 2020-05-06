@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
 # Begin the analysis for all data obtained from one supernova simulation
-# Identify all of the directories, then set up the preprocessing directories
+# Identify all of the directories, then set up the DM preprocessing directories
 # Generate the appropriate sbatch scripts for all burn_query and entropy runs
 # Sneak in extraction for the unburned yields using unburned as well
-# On a related note, also extract the list of particle IDs processed by Burnf
+# On a related note, also extract the list of particle IDs DM processed by Burnf
 # Finish by submitting those scripts to the saguaro cluster for execution
 
-# Last edited 11/13/17 by Greg Vance
+# Last modified 6 May 2020 by Greg Vance
 
 # Usage example:
-#	./preprocess.py sn_data/jet3b
-# To preprocess all data in the jet3b simulation directory
+#	./dm_preprocess.py sn_data/jet3b
+# To DM preprocess all data in the jet3b simulation directory
 
 import sys
 import os
@@ -30,7 +30,7 @@ CCO2UNBURN_PATH = "/home/gsvance/data_mining/cco2-unburned"
 # Full path to the compiled HDF5 file particle ID lister
 HDF5PID_PATH = "/home/gsvance/data_mining/hdf5_pid_list"
 
-# Main program for preprocessing (called at end of this file)
+# Main program for DM preprocessing (called at end of this file)
 def main():
 	# This script takes exactly one argument (the head directory for the simulation data)
 	if len(sys.argv) != 2:
@@ -39,13 +39,13 @@ def main():
 		sys.exit(1)
 	# Get all the preliminary info like directories and which isotopes to query
 	paths, isotopes = sn.get_paths(sys.argv[1]), sn.get_list(sn.ISOTOPES_FILE)
-	# Make any directories that need to be made before processing begins
+	# Make any directories that need to be made before DM processing begins
 	paths = sn.make_dirs(paths, sn.PRE_DIRECTORIES)
 	# Generate sbatch scripts for each isotope query and place them in the right spot
 	write_burn_query_scripts(paths, isotopes)
-	# Determine which SDF files to process based on tpos values, make sbatch scripts for them too
+	# Determine which SDF files to DM process based on tpos values, make sbatch scripts for them too
 	write_entropy_scripts(paths)
-	# Write an sbatch script for listing the particle IDs that were processed by Burnf
+	# Write an sbatch script for listing the particle IDs that were DM processed by Burnf
 	write_pid_script(paths)
 	# Submit all of the sbatch scripts to the saguaro cluster via slurm
 	sbatch_submit(paths)
@@ -102,13 +102,13 @@ def write_entropy_scripts(paths):
 	unburned = CCO2UNBURN_PATH if simname == "cco2" else UNBURNED_PATH
 	# Take note of which SDF file is the final timestep file
 	last = sn.sdf_list(paths, mode ="last")
-	# Figure out which SDF files need to be processed and make an sbatch script for each one
+	# Figure out which SDF files need to be DM processed and make an sbatch script for each one
 	for sdf in sn.sdf_list(paths):
 		# Extract the file's numeric file extension
 		ext = sn.get_ext(sdf)
 		# Create the name of the sbatch script file to be written
 		scriptfile = os.path.join(paths["sbatch"], "SDF" + ext + ".sh")
-		# Construct the full path to the SDF file to be processed
+		# Construct the full path to the SDF file to be DM processed
 		sdf_file = os.path.join(paths["sdf"], sdf)
 		# Put together the appropriate entropy command
 		command = "\n%s %s\n" % (reader, sdf_file)
@@ -197,7 +197,7 @@ def sbatch_submit(paths):
 			# Submit the file through sbatch and get sbatch's exit code
 			exitcode = sn.sbatch(scriptpath)
 			# If the submission failed, stop and ask the user whether to try again
-			# This often happens if preprocess.py tries to submit too many jobs at once
+			# This often happens if dm_preprocess.py tries to submit too many jobs at once
 			while exitcode != 0:
 				# Let the user diagnose the sbatch output and choose whether to retry
 				if sn.ask_user("Submission failure was detected. Try again?"):

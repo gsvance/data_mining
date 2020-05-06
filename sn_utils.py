@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last edited 11/15/19 by Greg Vance
+# Last modified 6 May 2020 by Greg Vance
 
 import os
 import sys
@@ -13,7 +13,7 @@ from elements import SYMBOLS
 
 # GLOBAL CONSTANTS
 
-# The max value of tpos to process using entropy, excepting the final timestep
+# The max value of tpos to DM process using entropy, excepting the final timestep
 TPOS_MAX = 1.0
 # Mass fraction threshold to use for all queries, e.g., 6 indicates 1e-6
 FMASS_CUT = '6'
@@ -40,9 +40,9 @@ ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
 # Location of the file listing all elements and isotopes to collect for plots
 ABUNDANCES_FILE = "/home/gsvance/data_mining/abundances.txt"
 
-# Preprocessing directories to add to the simulation head directory
+# DM preprocessing directories to add to the simulation head directory
 PRE_DIRECTORIES = ("sbatch", "queries")
-# Postprocessing directories to add to the simulation head directory
+# DM postprocessing directories to add to the simulation head directory
 POST_DIRECTORIES = ("analysis", "sorted_queries")
 
 # Conversion factors for converting SNSPH quantities to CGS units
@@ -99,12 +99,12 @@ def get_tpos(filename):
 	# Return the tpos float value that was recovered
 	return tpos
 
-# Return names of SDF files from the SDF subdirectory that need to be processed in various ways
+# Return names of SDF files from the SDF subdirectory that need to be DM processed in various ways
 # There are four different modes in which this function can be told to operate:
-#  - all: default, return a list of all SDF files that need to be preprocessed by entropy
-#  - first: return the SDF file with the lowest tpos value (for Ye values in postprocessing)
+#  - all: default, return a list of all SDF files that need to be DM preprocessed by entropy
+#  - first: return the SDF file with the lowest tpos value (for Ye values in DM postprocessing)
 #  - last: return the SDF file with the highest tpos value (for unburned yields and plotting data)
-#  - early: return a list of all SDF files with tpos up to TPOS_MAX (for peak temp and rho in postprocessing)
+#  - early: return a list of all SDF files with tpos up to TPOS_MAX (for peak temp and rho in DM postprocessing)
 # The final optional argument appends a ".out" extension to list the entropy outfiles instead
 def sdf_list(paths, mode="all", dotout=False):
 	# Check that the mode setting is actually one of the available options
@@ -130,10 +130,10 @@ def sdf_list(paths, mode="all", dotout=False):
 	i = 0
 	while sdf_files[i][1] < TPOS_MAX:
 		i += 1
-	# Select all files up to and including this one so they can be processed to find peak temps
+	# Select all files up to and including this one so they can be DM processed to find peak temps
 	selected = sdf_files[:i+1]
 	# Also run entropy on the SDF file from the final time step for use in SPH visualizations
-	# Exclude this file when postprocessing to find the simulation's peak temperatures
+	# Exclude this file when DM postprocessing to find the simulation's peak temperatures
 	if len(sdf_files) > i + 1 and mode != "early": # mode == "all"
 		selected.append(sdf_files[-1])
 	# Remove all the tpos values and return the list of selected SDF files
@@ -233,7 +233,7 @@ def make_dirs(paths, newdirs):
 		# Add the full directory path to the paths variable
 		paths[subdir] = subdirpath
 	# Print a report message and return the new paths variable
-	print "\n%s processing directories found, %s additional directories created" % (found, made)
+	print "\n%s DM processing directories found, %s additional directories created" % (found, made)
 	return paths
 
 # Given a paths dictionary as returned by get_paths, check for existence of specified subdirectories
@@ -324,7 +324,7 @@ def sbatch(filename):
 	# Return the exit code that sbatch sent
 	return exit_code
 
-# Clean up all the files in a simulation's sbatch dir prior to postprocessing
+# Clean up all the files in a simulation's sbatch dir prior to DM postprocessing
 # Delete any of the sbatch job .out or .err files that are completely empty
 # Also delete any .err files that contain run_query.py overwrite errors
 def sbatch_cleanup(paths):

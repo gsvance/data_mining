@@ -1,9 +1,9 @@
-# File wrapper class to streamline the act of reading lots CSV files in postprocessing
+# File wrapper class to streamline the act of reading lots CSV files in DM postprocessing
 # Class opens the file and returns lines one by one as split lists of the line entries
 # Checks that the line's particle ID matches the desired one and returns [] if not
-# Previously a part of the file postprocessing.py, but it is now encapsulated here
+# Previously a part of the file dm_postprocessing.py, but it is now encapsulated here
 
-# Last edited 11/21/17 by Greg Vance
+# Last modified 6 May 2020 by Greg Vance
 
 class Particler:
 	# Initialize the object and start reading the given file

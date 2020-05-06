@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Complete the analysis for all data obtained from one supernova simulation
-# Identify all of the directories and such, then set up postprocessing directories
+# Identify all of the directories and such, then set up DM postprocessing directories
 # Look through all the slurm .out files and extract the simulation's total yields
 # Update the extracted total yields using the unburned yields from the SDF files
 # Sort the outfiles from burn_query because their contents start out disorganized
@@ -11,11 +11,11 @@
 #   - Peak explosion temperatures for each particle (plot)
 #   - Selected elemental abundances for each particle (plot)
 
-# Last edited 1/22/18 by Greg Vance
+# Last modified 6 May 2020 by Greg Vance
 
 # Usage example:
-#	./postprocess.py sn_data/jet3b
-# To postprocess all data in the jet3b simulation directory 
+#	./dm_postprocess.py sn_data/jet3b
+# To DM postprocess all data in the jet3b simulation directory 
 
 import sys
 import os
@@ -33,7 +33,7 @@ UPDATE_YIELDS_PATH = "/home/gsvance/data_mining/update_yields"
 # Full path to the sort_query.sh executable shell script
 SORT_QUERY_PATH = "/home/gsvance/data_mining/sort_query.sh"
 
-# Main program for postprocessing, called at the end of this file
+# Main program for DM postprocessing, called at the end of this file
 def main():
 	# Start by checking the number of arguments passed to the script
 	if len(sys.argv) != 2:
@@ -42,9 +42,9 @@ def main():
 		sys.exit(1)
 	# Look in the simulation directory and identify all the raw data directories
 	paths = sn.get_paths(sys.argv[1])
-	# Check that the required preprocessing subdirectories already exist
+	# Check that the required DM preprocessing subdirectories already exist
 	paths = sn.check_dirs(paths, sn.PRE_DIRECTORIES)
-	# Make any new directories that need to be made before processing continues
+	# Make any new directories that need to be made before DM processing continues
 	paths = sn.make_dirs(paths, sn.POST_DIRECTORIES)
 	# Clean out extraneous sbatch output files before we do anything else
 	sn.sbatch_cleanup(paths)
@@ -65,7 +65,7 @@ def main():
 def extract_yields(paths):
 	# Print a progress indicator message
 	print "\nExtracting total simulation yields"
-	# Look up the path to the preprocessing sbatch directory
+	# Look up the path to the DM preprocessing sbatch directory
 	sbatch_dir = paths["sbatch"]
 	# Get the name that's on the head simulation directory
 	simname = os.path.basename(paths["head"])
@@ -147,7 +147,7 @@ def write_particles(paths, abundances):
 		return
 	# Print a quick progress message for the user
 	print "\nCompiling simulation plotting values"
-	# Open all of the entropy output files from the preprocessing
+	# Open all of the entropy output files from the DM preprocessing
 	# The file from the final timestep is used for SPH plotting values
 	# The files from early timesteps are used to find the peak temps and rhos
 	entropy_initial, entropy_final, entropy_early = entropy_files(paths)
