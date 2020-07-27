@@ -109,7 +109,8 @@ int main(int argc, char * argv[])
 		else
 		{
 			printf("Now reading file %d of %d\n", i + 1, n_hdf5);
-			ids[i++] = read_hdf5_ids(argv[c], &n_ids[i]);
+			ids[i] = read_hdf5_ids(argv[c], &n_ids[i]);
+			++i;
 		}
 	}
 

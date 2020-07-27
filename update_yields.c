@@ -56,6 +56,7 @@ int ends_with(char * str, char * end);
 void read_total(isotope data[], char * file_name);
 particle * read_unburned(char * file_name, int * particles);
 void tag_unburned_particles(particle * data, int particles, char * pids_file);
+int binary_search(int target, int * arr, int length);
 void sum_unburned(double totals[], particle * data, int particles);
 void update_totals(isotope totals[], double unburned[]);
 double pairs_sum(double * array, int n);
