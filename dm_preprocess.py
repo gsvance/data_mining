@@ -7,7 +7,7 @@
 # On a related note, also extract the list of particle IDs DM processed by Burnf
 # Finish by submitting those scripts to the saguaro cluster for execution
 
-# Last modified 6 May 2020 by Greg Vance
+# Last modified 1 Aug 2020 by Greg Vance
 
 # Usage example:
 #	./dm_preprocess.py sn_data/jet3b
@@ -97,9 +97,13 @@ def write_entropy_scripts(paths):
 	print "\nGenerating sbatch scripts for entropy"
 	# Determine the name of the simulation so the correct reader can be used
 	simname = os.path.basename(paths["head"])
-	# Make sure the alternate SDF Reader is used for the cco2 simulation
-	reader = CCO2SDF_PATH if simname == "cco2" else ENTROPY_PATH
-	unburned = CCO2UNBURN_PATH if simname == "cco2" else UNBURNED_PATH
+	# Make sure the old "entropy" SDF Reader is only used for the oldest sims
+	if simname in ("50Am", "g292-j4c", "jet3b"):
+		reader = ENTROPY_PATH
+		unburned = UNBURNED_PATH
+	else:
+		reader = CCO2SDF_PATH
+		unburned = CCO2UNBURN_PATH
 	# Take note of which SDF file is the final timestep file
 	last = sn.sdf_list(paths, mode ="last")
 	# Figure out which SDF files need to be DM processed and make an sbatch script for each one

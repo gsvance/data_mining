@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last modified 6 May 2020 by Greg Vance
+# Last modified 1 Aug 2020 by Greg Vance
 
 import os
 import sys
@@ -288,8 +288,8 @@ def write_script(scriptfile, command, stdout, stderr, walltime):
 	lines = []
 	# Start with the bash shebang and a blank line
 	lines.append("#!/bin/bash\n")
-	# Slurm partition option (just use the default partition)
-	lines.append("#SBATCH -p cluster")
+	### Slurm partition option (just use the default partition)
+	##lines.append("#SBATCH -p cluster")
 	# Slurm cores option (only 1 is needed)
 	lines.append("#SBATCH -n 1")
 	# Slurm wall time option (D-HH:MM), provided as a function argument
