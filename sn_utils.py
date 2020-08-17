@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last modified 1 Aug 2020 by Greg Vance
+# Last modified 17 Aug 2020 by Greg Vance
 
 import os
 import sys
@@ -17,8 +17,8 @@ from elements import SYMBOLS
 TPOS_MAX = 1.0
 # Mass fraction threshold to use for all queries, e.g., 6 indicates 1e-6
 FMASS_CUT = '6'
-# Mass fraction threshold to use for isotopes needing a low cut, 1e-10
-FMASS_CUT_LOW = '10'
+# Mass fraction threshold to use for isotopes needing a low cut, 1e-12
+FMASS_CUT_LOW = '12'
 # Isotopes that need the lower cut for various reasons
 ISOTOPES_LOW = ("1n",
 	"7Be", "9Be", "10Be",
@@ -32,6 +32,7 @@ ISOTOPES_LOW = ("1n",
 	"40K", "41K",
 	"43Ca",
 	"44Ti", "46Ti", "47Ti", "48Ti", "49Ti", "50Ti",
+	"50Cr", "52Cr", "53Cr", "54Cr",
 	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe",
 	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni")
 
