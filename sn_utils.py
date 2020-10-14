@@ -1,12 +1,14 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last modified 17 Aug 2020 by Greg Vance
+# Last modified 13 Oct 2020 by Greg Vance
 
 import os
 import sys
 import subprocess
 import glob
+import re
+import mmap
 
 from elements import SYMBOLS
 
@@ -80,23 +82,21 @@ def get_ext(filename):
 
 # Given the name of an SDF file, return the float value of tpos that is declared therein
 def get_tpos(filename):
-	# Open the SDF file (in non-binary mode) to look for tpos value in plain text header
-	sdf = open(filename, 'r')
-	# Loop through lines until the correct line is found
-	found = False
-	for line in sdf:
-		# Check if the beginning of the line looks like a tpos declaration
-		if len(line) > 13 and line[:13] == "float tpos = ":
-			# Extract the numerical value between " = " and ";\n"
-			tpos = float(line[line.index('=') + 2 : line.index(';')])
-			# The tpos value was found, signal to break the loop
-			found = True
-			break
-	# Close the open SDF file, all done with it
-	sdf.close()
-	# Raise an error if the tpos value was not found
-	if not found:
-		raise IOError("no tpos value found in file %s" % (filename))
+	# Open the SDF file for binary reading to pass along to the memory map
+	with open(filename, "rb") as sdf:
+		# Create an mmap of the file for speedy reading of what we want
+		sdfmm = mmap.mmap(sdf.fileno(), length=10**4, access=mmap.ACCESS_READ)
+		# Use a simple regex to find the tpos line
+		match = re.search(b"^float tpos = ([-+0-9.eE]+);$", sdfmm,
+			re.MULTILINE)
+		# Extract the numerical value from group 1 of the regex match
+		if match:
+			tpos = float(match.group(1))
+		# Raise an error if the tpos value was not found
+		else:
+			raise IOError("no tpos value found in file %s" % (filename))
+		# Explicitly close the map now that we're done with it
+		sdfmm.close()
 	# Return the tpos float value that was recovered
 	return tpos
 
