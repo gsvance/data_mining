@@ -18,3 +18,5 @@ n He Be B C O Ne Na Mg Al Si P S Ar K Ca Ti Fe Ni
 48Cr 50Cr 52Cr 53Cr 54Cr
 54Fe 56Fe 57Fe 58Fe 60Fe
 56Ni 58Ni 60Ni 61Ni 62Ni 64Ni
+84Sr 86Sr 87Sr 88Sr
+95Mo 96Mo 97Mo 98Mo

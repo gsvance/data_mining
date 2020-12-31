@@ -2,7 +2,7 @@
 // Mostly includes significantly more explanatory comments
 // The information that is printed to the output files has changed
 
-// Last modified 7/5/17 by Greg Vance
+// Last modified 31 Dec 2020 by Greg Vance
 
 /* 	
 	Entropy
@@ -104,14 +104,14 @@ int main(int argc, char *argv[])
 
 		// Seek to the start of the data and print the CSV header to the output file
 		fseek(fp, offset, SEEK_SET);
-		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, h, Mass, Y_e\n");
+		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, A_x, A_y, A_z, h, Mass, Y_e\n");
 
 		// Loop over the particles in the file, printing ASCII data to the CSV file for each
 		for (i = 0; i < nobj; i++)
 		{
 			fread(&part, sizeof(particle), 1, fp);
-			fprintf(ofp,"%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
-				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.h, part.mass, part.Y_el);
+			fprintf(ofp,"%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
+				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.ax, part.ay, part.az, part.h, part.mass, part.Y_el);
 		}
 
 		// Close the input and output files

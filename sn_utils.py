@@ -1,7 +1,7 @@
 # Python library containing many utility functions and global variables for data mining
 # Most of this stuff is needed by more than one script and this keeps the code well-organized
 
-# Last modified 13 Oct 2020 by Greg Vance
+# Last modified 31 Dec 2020 by Greg Vance
 
 import os
 import sys
@@ -36,7 +36,9 @@ ISOTOPES_LOW = ("1n",
 	"44Ti", "46Ti", "47Ti", "48Ti", "49Ti", "50Ti",
 	"50Cr", "52Cr", "53Cr", "54Cr",
 	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe",
-	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni")
+	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni"
+	"84Sr", "86Sr", "87Sr", "88Sr",
+	"95Mo", "96Mo", "97Mo", "98Mo")
 
 # Location of the file listing all isotopes to run queries on
 ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
@@ -55,6 +57,7 @@ SNSPH_LENGTH = 6.955e10  # 1 Rsun in centimeters
 SNSPH_TIME = 100.0  # 100 seconds
 SNSPH_VELOCITY = SNSPH_LENGTH / SNSPH_TIME
 SNSPH_DENSITY = SNSPH_MASS / SNSPH_LENGTH**3
+SNSPH_ACCELERATION = SNSPH_LENGTH / SNSPH_TIME**2
 
 
 # FILE OPERATIONS
@@ -392,4 +395,9 @@ def convert_velocity(*vargs):
 # Convert densities from SNSPH units to g/cm^3
 def convert_density(*dargs):
 	return convert(dargs, SNSPH_DENSITY)
+
+# Convert accelerations from SNSPH units to cm/s^2
+def convert_acceleration(*aargs):
+	return convert(aargs, SNSPH_ACCELERATION)
+
 

@@ -3,7 +3,7 @@
 // Fear not Jack, you no longer need to use a hex editor to figure that out
 // Also, I added a lot of comments to make it more clear what the code does
 
-// Last edited 7/5/16 by Greg Vance
+// Last edited 31 Dec 2020 by Greg Vance
 
 /* 	
 	SDF Reader
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
 		nobj = (sz - offset) / sizeof(particle);
 
 		// Write the CSV header line to the output file
-		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, h, Mass, Y_e\n");
+		fprintf(ofp, "ID, X_Pos, Y_Pos, Z_Pos, Temp, U, U_dot, rho, V_x, V_y, V_z, A_x, A_y, A_z, h, Mass, Y_e\n");
 
 		// Set the file pointer to the position of the end of the SDF header (data starts here)
 		fseek(fp, offset, SEEK_SET);
@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
 		for (i = 0; i < nobj; i++)
 		{
 			fread(&part, sizeof(particle), 1, fp);
-			fprintf(ofp, "%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
-				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.h, part.mass, part.Y_el);
+			fprintf(ofp, "%d, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
+				part.ident, part.x, part.y, part.z, part.temp, part.u, part.udot, part.rho, part.vx, part.vy, part.vz, part.ax, part.ay, part.az, part.h, part.mass, part.Y_el);
 		}
 
 		// Close the input and output files
