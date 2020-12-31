@@ -11,7 +11,7 @@
 #   - Peak explosion temperatures for each particle (plot)
 #   - Selected elemental abundances for each particle (plot)
 
-# Last modified 6 May 2020 by Greg Vance
+# Last modified 31 Dec 2020 by Greg Vance
 
 # Usage example:
 #	./dm_postprocess.py sn_data/jet3b
@@ -158,7 +158,7 @@ def write_particles(paths, abundances):
 	outname = os.path.join(paths["analysis"], "%s_plotting.out" % (simname))
 	outfile = open(outname, 'w')
 	# Generate a header for the output file and the content of the columns file
-	header = ["id", "x", "y", "z", "vx", "vy", "vz", "mass", "h", "density", "peak temp", "peak density", "Y_{e}"]
+	header = ["id", "x", "y", "z", "vx", "vy", "vz", "ax", "ay", "az", "mass", "h", "density", "peak temp", "peak density", "Y_{e}"]
 	for abun in abundances:
 		header.append("X_{%s}" % (abun))
 	outfile.write(", ".join(header) + '\n')
@@ -179,7 +179,7 @@ def write_particles(paths, abundances):
 			print "Warning: particle ID %s missing from final entropy outfile" % (id)
 			id += 1
 			continue
-		sid, x, y, z, temp, u, udot, density, vx, vy, vz, h, mass, ye_final = line
+		sid, x, y, z, temp, u, udot, density, vx, vy, vz, ax, ay, az, h, mass, ye_final = line
 		# Determine the peak temperature and density for this particle ID
 		peak_temp, peak_rho = get_peaks(id, entropy_early)
 		# Determine the progenitor electron fraction for this particle ID
@@ -187,12 +187,13 @@ def write_particles(paths, abundances):
 		# Convert everything with mass, length, or time units from SNSPH units to CGS
 		x, y, z, h = sn.convert_length(x, y, z, h)
 		vx, vy, vz = sn.convert_velocity(vx, vy, vz)
+		ax, ay, az = sn.convert_acceleration(ax, ay, az)
 		mass = sn.convert_mass(mass)
 		density, peak_rho = sn.convert_density(density, peak_rho)
 		# Determine the abundance of each element in question at this particle ID
 		abun = get_abuns(id, abuns_files)
 		# Combine everything into a line that gets written to the file
-		outline = [sid, x, y, z, vx, vy, vz, mass, h, density, peak_temp, peak_rho, ye]
+		outline = [sid, x, y, z, vx, vy, vz, ax, ay, az, mass, h, density, peak_temp, peak_rho, ye]
 		outline.extend(abun)
 		outfile.write(", ".join(outline) + '\n')
 		# Increment the particle ID
