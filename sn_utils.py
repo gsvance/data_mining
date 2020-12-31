@@ -259,17 +259,36 @@ def check_dirs(paths, dirs):
 
 # ELEMENT UTILITIES
 
-# Take a string specifying an elemental isotope and return the values of N and Z as strings
-# Note: method for parsing the string isn't great, but it supports both formats (22Na and Na22)
-#       --> it would even support the form 2N2a and read it as the same exact thing...
+# Regular expression matching any string that specifies an elemental isotope
+ISOTOPE_PATTERN = re.compile(r"""
+	\A\s*                      # optional leading whitespace
+	(?:
+		([0-9]+)([A-Za-z]+)    # first format type, e.g., 22Na
+	|
+		([A-Za-z]+)([0-9]+)    # second format type, e.g., Na22
+	)
+	\s*\Z                      # optional trailing whitespace
+	""", re.VERBOSE)
+
+# Take a string specifying an elemental isotope and return N and Z as strings
 def nn_nz(isotope):
-	# Pick out all the digits from the isotope string, this is the mass number
-	mass = ''.join([x for x in isotope if x.isdigit()])
-	# Pick out the letters from the isotope string, this is the element's symbol
-	symbol = ''.join([x for x in isotope if x.isalpha()])
+	# Use the ISOTOPE_PATTERN regular expression to parse the input string
+	match = ISOTOPE_PATTERN.match(isotope)
+	# Raise an error if the string didn't parse correctly for whatever reason
+	if not match:
+		raise ValueError("isotope string %s did not parse" % (repr(isotope)))
+	# If the string matched the first format type, extract the mass and symbol
+	if match.group(1) is not None and match.group(2) is not None:
+		mass, symbol = match.group(1), match.group(2)
+	# If it matched the second format type, extract that mass and symbol
+	elif match.group(3) is not None and match.group(4) is not None:
+		mass, symbol = match.group(4), match.group(3)
+	# This else statement should not be possible...
+	else:
+		assert False, "ISOTOPE_PATTERN regex failure was detected"
 	# Find where the symbol appears in the symbols list, that index is nz
 	nz = SYMBOLS.index(symbol)
-	# Since mass = nn + nz, find nn using nz and the mass
+	# Since mass = nn + nz, work out nn using nz and the mass
 	nn = int(mass) - nz
 	# Convert nn and nz to strings, then return them both
 	return str(nn), str(nz)
@@ -281,7 +300,7 @@ def iso_name(nn, nz):
 	# Find the appropriate elemental symbol for this value of nz
 	symbol = SYMBOLS[int(nz)]
 	# Concatenate the two strings together to form the name of the isotope
-	return (mass + symbol)
+	return mass + symbol
 
 
 # SLURM UTILITIES
