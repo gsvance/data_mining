@@ -3,7 +3,7 @@
 # Wrapper for burn_query that takes arguments from command line for a single isotope query
 # Eventually, I hope to just rewrite burn_query's interface, but this will help out for now
 
-# Last edited 11/13/17 by Greg Vance
+# Last edited 11 Jan 2021 by Greg Vance
 
 # Example usage:
 #	./run_query.py -i 26Al -a 6 -o 26Al.out jet3b/j3b.dir/*.h5
@@ -11,8 +11,9 @@
 # Results will be written to a new file named 26Al.out
 
 import argparse
-import os.path
+import os
 import subprocess
+import math
 
 from sn_utils import nn_nz
 
@@ -46,10 +47,20 @@ def make_inputs(isotope, abundance, outfile):
 	nn, nz = nn_nz(isotope)
 	# Check if the outfile already exists (to avoid overwrites or strange appending behavior)
 	if os.path.isfile(outfile):
-		# Raise an error and stop everything! Flag this as an overwrite failure
-		error_line_1 = "specified outfile '%s' already exists!\n" % (outfile)
-		error_line_2 = "!!! OVERWRITE FAILURE IN RUN_QUERY, BURN_QUERY WAS NOT RUN !!!"
-		raise IOError(error_line_1 + error_line_2)
+		# Check what the smallest abundance in the existing file is
+		small = get_smallest_abundance(outfile)
+		# Let's compare the smallest value to the current requested threshold
+		logsmall = math.log10(small) if small is not None else None
+		logabun = -1 * int(abundance)
+		# If the threshold seems unchanged, then error out
+		if logsmall is not None and abs(logsmall - logabun) < 0.5:
+			# Raise an error and stop everything! Flag this as an overwrite failure
+			error_line_1 = "specified outfile '%s' already exists!\n" % (outfile)
+			error_line_2 = "!!! OVERWRITE FAILURE IN RUN_QUERY, BURN_QUERY WAS NOT RUN !!!"
+			raise IOError(error_line_1 + error_line_2)
+		else:
+			# It seems like the threshold has changed, so delete the old file and continue
+			os.remove(outfile)
 	# Start an empty list to store the inputs for burn_query
 	inputs = []
 	# Select option 1 (enter a new query)
@@ -70,6 +81,33 @@ def make_inputs(isotope, abundance, outfile):
 	inputs.append('')
 	# Join the list with newlines, returning it as one string
 	return '\n'.join(inputs)
+
+def get_smallest_abundance(outfile):
+	# Initialize a variable to track the smallest mass fraction in the file
+	smallest = None
+	# Open the older outfile for reading
+	with open(outfile, 'r') as outf:
+		# Loop over the lines of the ASCII file
+		for line in outf:
+			# Split the line of the file into columns using ", " as delimiter
+			columns = line.strip().split(', ')
+			# There should be 4 columns -- if not, quietly move on
+			if len(columns) != 4:
+				continue
+			# If we have a good line of the file, try to parse the values
+			try:
+				pid, nz, nn, massfrac = int(columns[0]), int(columns[1]), \
+					int(columns[2]), float(columns[3])
+			# If values won't parse, then it's probably a header -- ignore it
+			except ValueError:
+				continue
+			# If we haven't seen any values yet or this mass frac is smaller, save it
+			if smallest is None or massfrac < smallest:
+				smallest = massfrac
+			# Just in case, delete the values from this line of the file
+			del columns, pid, nz, nn, massfrac
+	# Return whatever we found
+	return smallest
 
 def run_burn_query(hdf5, inputs):
 	# Create a new subprocess to run burn_query from python, feed it the HDF5 file list
