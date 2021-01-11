@@ -3,7 +3,7 @@
 # Checks that the line's particle ID matches the desired one and returns [] if not
 # Previously a part of the file dm_postprocessing.py, but it is now encapsulated here
 
-# Last modified 6 May 2020 by Greg Vance
+# Last modified 11 Jan 2021 by Greg Vance
 
 class Particler:
 	# Initialize the object and start reading the given file
@@ -13,7 +13,10 @@ class Particler:
 		# Open the designated file for reading
 		self.file = open(self.filename, 'r')
 		# The SDF files from cco2 are... special. Do we have the honor?
-		self.cco2 = ( filename.find("r3g_1M_cco2_sph.") != -1 )
+		self.cco2 = ( filename.find("/cco2/") != -1 )
+		# The vconvL "fake model" can have this sort of problem as well
+		if not self.cco2:
+			self.cco2 = ( filename.find("/vconvL/") != -1 )
 		# Flag for when all particles in the file are exhaused
 		self.empty = False
 		# Set up the ID tracker attribute with a negative dummy value
