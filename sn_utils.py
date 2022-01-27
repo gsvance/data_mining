@@ -36,14 +36,17 @@ ISOTOPES_LOW = ("1n",
 	"44Ti", "46Ti", "47Ti", "48Ti", "49Ti", "50Ti",
 	"50Cr", "52Cr", "53Cr", "54Cr",
 	"54Fe", "56Fe", "57Fe", "58Fe", "60Fe",
+	"55Co", "56Co", "57Co", "58Co", "59Co", "60Co", "61Co", "62Co", "63Co",
 	"58Ni", "60Ni", "61Ni", "62Ni", "64Ni",
 	"84Sr", "86Sr", "87Sr", "88Sr",
 	"95Mo", "96Mo", "97Mo", "98Mo")
 
+# User's home directory
+HOME_DIR = os.path.expanduser("~")
 # Location of the file listing all isotopes to run queries on
-ISOTOPES_FILE = "/home/gsvance/data_mining/isotopes.txt"
+ISOTOPES_FILE = os.path.join(HOME_DIR, "data_mining/isotopes.txt")
 # Location of the file listing all elements and isotopes to collect for plots
-ABUNDANCES_FILE = "/home/gsvance/data_mining/abundances.txt"
+ABUNDANCES_FILE = os.path.join(HOME_DIR, "data_mining/abundances.txt")
 
 # DM preprocessing directories to add to the simulation head directory
 PRE_DIRECTORIES = ("sbatch", "queries")
@@ -323,8 +326,9 @@ def write_script(scriptfile, command, stdout, stderr, walltime):
 	lines.append("#SBATCH -e " + stderr)
 	# Slurm mail notification option (tell me about end & fail)
 	lines.append("#SBATCH --mail-type=END,FAIL")
-	# Slurm email-to address (my ASU gmail address)
-	lines.append("#SBATCH --mail-user=gsvance@asu.edu")
+	# Slurm email-to address (user's ASU gmail address)
+	asuid = os.path.basename(os.path.expanduser("~"))  # hack to get user's username
+	lines.append("#SBATCH --mail-user=" + asuid + "@asu.edu")
 	# State the actual command that makes the script do something useful
 	lines.append(command)
 	# Open up the designated sbatch script file for writing

@@ -17,8 +17,10 @@ import math
 
 from sn_utils import nn_nz
 
+# User's home directory
+HOME_DIR = os.path.expanduser("~")
 # Full path to the compiled burn_query executable file
-BURN_QUERY_PATH = "/home/gsvance/data_mining/burn_query"
+BURN_QUERY_PATH = os.path.join(HOME_DIR, "data_mining/burn_query")
 
 def main():
 	# Parse all the arguments using argparse (isotope, abundance, outfile, HDF5s)

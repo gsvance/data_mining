@@ -26,12 +26,14 @@ import glob
 import sn_utils as sn
 from particler import Particler
 
+# User's home directory
+HOME_DIR = os.path.expanduser("~")
 # Full path to the extract_yields.sh executable shell script
-EXTRACT_YIELDS_PATH = "/home/gsvance/data_mining/extract_yields.sh"
+EXTRACT_YIELDS_PATH = os.path.join(HOME_DIR, "data_mining/extract_yields.sh")
 # Full path to the compiled update_yields executable
-UPDATE_YIELDS_PATH = "/home/gsvance/data_mining/update_yields"
+UPDATE_YIELDS_PATH = os.path.join(HOME_DIR, "data_mining/update_yields")
 # Full path to the sort_query.sh executable shell script
-SORT_QUERY_PATH = "/home/gsvance/data_mining/sort_query.sh"
+SORT_QUERY_PATH = os.path.join(HOME_DIR, "data_mining/sort_query.sh")
 
 # Main program for DM postprocessing, called at the end of this file
 def main():

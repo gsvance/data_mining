@@ -18,17 +18,19 @@ import os
 
 import sn_utils as sn
 
+# User's home directory
+HOME_DIR = os.path.expanduser("~")
 # Full path to the executable run_query.py script for running burn_query
-RUNQUERY_PATH = "/home/gsvance/data_mining/run_query.py"
+RUNQUERY_PATH = os.path.join(HOME_DIR, "data_mining/run_query.py")
 # Full path to the compiled entropy executable file
-ENTROPY_PATH = "/home/gsvance/data_mining/entropy"
+ENTROPY_PATH = os.path.join(HOME_DIR, "data_mining/entropy")
 # Full path to the compiled SDF Reader executable for cco2
-CCO2SDF_PATH = "/home/gsvance/data_mining/cco2-SDF-reader"
+CCO2SDF_PATH = os.path.join(HOME_DIR, "data_mining/cco2-SDF-reader")
 # Full paths to the compiled unburned executable files
-UNBURNED_PATH = "/home/gsvance/data_mining/unburned"
-CCO2UNBURN_PATH = "/home/gsvance/data_mining/cco2-unburned"
+UNBURNED_PATH = os.path.join(HOME_DIR, "data_mining/unburned")
+CCO2UNBURN_PATH = os.path.join(HOME_DIR, "data_mining/cco2-unburned")
 # Full path to the compiled HDF5 file particle ID lister
-HDF5PID_PATH = "/home/gsvance/data_mining/hdf5_pid_list"
+HDF5PID_PATH = os.path.join(HOME_DIR, "data_mining/hdf5_pid_list")
 
 # Main program for DM preprocessing (called at end of this file)
 def main():
