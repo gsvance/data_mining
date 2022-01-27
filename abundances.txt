@@ -1,4 +1,4 @@
-n He Be B C O Ne Na Mg Al Si P S Ar K Ca Ti Fe Ni
+n He Be B C O Ne Na Mg Al Si P S Ar K Ca Ti Fe Co Ni
 
 4He
 7Be 9Be 10Be
